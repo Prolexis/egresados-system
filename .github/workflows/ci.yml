@@ -1,0 +1,141 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/egresados_test
+
+jobs:
+  # ─── Tests ───────────────────────────────────────────────────────────────────
+  test:
+    name: Tests & Lint
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: egresados_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install API dependencies
+        run: cd apps/api && npm ci
+
+      - name: Generate Prisma client
+        run: cd apps/api && npx prisma generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Run Prisma migrations
+        run: cd apps/api && npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Run API tests
+        run: cd apps/api && npm test
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          JWT_SECRET: test_secret_ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+      - name: Install Web dependencies
+        run: cd apps/web && npm ci
+
+      - name: Lint Web
+        run: cd apps/web && npm run lint
+
+      - name: Build Web
+        run: cd apps/web && npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+
+  # ─── Build Docker ────────────────────────────────────────────────────────────
+  build:
+    name: Build Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/api
+          push: false
+          tags: egresados-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/web
+          push: false
+          tags: egresados-web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Deploy Staging ──────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy (placeholder)
+        run: echo "Deploy to staging environment"
+        # Agregar pasos de deploy reales aquí (Vercel, Railway, etc.)
+
+  # ─── Deploy Production ────────────────────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy (placeholder)
+        run: echo "Deploy to production environment"
+        # Agregar pasos de deploy reales aquí
