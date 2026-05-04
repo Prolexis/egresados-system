@@ -6,6 +6,7 @@ import {
   BookOpen,
   Briefcase,
   CheckCircle,
+  ChevronDown,
   Clock,
   Filter,
   GraduationCap,
@@ -178,14 +179,79 @@ function EstadoBadge({ estado }: { estado: string }) {
 function TableSkeleton() {
   return (
     <>
-      {Array.from({ length: 7 }).map((_, index) => (
+      {Array.from({ length: 6 }).map((_, index) => (
         <tr key={index}>
-          <td colSpan={6} className="px-6 py-4">
+          <td colSpan={6} className="px-5 py-4">
             <div className="h-5 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-white/10" />
           </td>
         </tr>
       ))}
     </>
+  );
+}
+
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  tone = 'blue',
+}: {
+  title: string;
+  value: number;
+  subtitle: string;
+  tone?: 'blue' | 'amber' | 'indigo' | 'emerald';
+}) {
+  const toneMap = {
+    blue: 'border-blue-100 bg-white shadow-blue-100/40 dark:border-white/10 dark:bg-white/5',
+    amber:
+      'border-amber-100 bg-gradient-to-br from-white to-amber-50/70 shadow-amber-100/40 dark:border-white/10 dark:from-white/5 dark:to-amber-500/5',
+    indigo:
+      'border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70 shadow-indigo-100/40 dark:border-white/10 dark:from-white/5 dark:to-indigo-500/5',
+    emerald:
+      'border-emerald-100 bg-gradient-to-br from-white to-emerald-50/70 shadow-emerald-100/40 dark:border-white/10 dark:from-white/5 dark:to-emerald-500/5',
+  };
+
+  const valueColor = {
+    blue: 'text-slate-950 dark:text-white',
+    amber: 'text-amber-600 dark:text-amber-300',
+    indigo: 'text-indigo-600 dark:text-indigo-300',
+    emerald: 'text-emerald-600 dark:text-emerald-300',
+  };
+
+  return (
+    <article
+      className={`rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneMap[tone]}`}
+    >
+      <p className="text-sm font-semibold text-slate-500 dark:text-white/60">
+        {title}
+      </p>
+      <h3 className={`mt-1.5 text-2xl font-black ${valueColor[tone]}`}>
+        {value}
+      </h3>
+      <p className="mt-1 text-xs text-slate-400 dark:text-white/45">
+        {subtitle}
+      </p>
+    </article>
+  );
+}
+
+function SelectWrapper({
+  children,
+  icon,
+}: {
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      {icon && (
+        <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 dark:text-white/45">
+          {icon}
+        </div>
+      )}
+      {children}
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/45" />
+    </div>
   );
 }
 
@@ -345,24 +411,24 @@ export default function CandidatosPage() {
   const isLoading = loadingOfertas || loadingPostulaciones;
 
   return (
-    <main className="space-y-7 animate-fadeIn">
-      <section className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 p-8 shadow-xl shadow-blue-100/60 dark:border-slate-700 dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:shadow-none">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl dark:bg-blue-500/20" />
-        <div className="absolute bottom-0 left-1/3 h-52 w-52 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-500/20" />
+    <main className="space-y-5 animate-fadeIn">
+      <section className="relative overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 px-6 py-5 shadow-md shadow-blue-100/50 dark:border-slate-700 dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:shadow-none">
+        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-blue-300/25 blur-3xl dark:bg-blue-500/15" />
+        <div className="absolute bottom-0 left-1/3 h-36 w-36 rounded-full bg-indigo-300/20 blur-3xl dark:bg-indigo-500/15" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.85),transparent_35%)] dark:bg-none" />
 
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white/75">
-              <UserCheck className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white/75">
+              <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-300" />
               Gestión de postulantes
             </div>
 
-            <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-5xl dark:text-white">
+            <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-4xl dark:text-white">
               Candidatos
             </h1>
 
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-white/70">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-white/70">
               Revisa, filtra y gestiona los postulantes asociados a tus ofertas
               laborales.
             </p>
@@ -372,7 +438,7 @@ export default function CandidatosPage() {
             type="button"
             onClick={loadOfertas}
             disabled={isLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-6 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/15"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-5 py-2.5 text-sm font-black text-slate-950 shadow-md shadow-blue-100 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/15"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Actualizar
@@ -380,91 +446,75 @@ export default function CandidatosPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-          <p className="text-sm font-semibold text-slate-500 dark:text-white/60">
-            Total candidatos
-          </p>
-          <h3 className="mt-2 text-3xl font-black text-slate-950 dark:text-white">
-            {resumen.total}
-          </h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-white/45">
-            Según filtros aplicados
-          </p>
-        </article>
-
-        <article className="rounded-3xl border border-amber-100 bg-gradient-to-br from-white to-amber-50/70 p-5 shadow-sm shadow-amber-100/50 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:from-white/5 dark:to-amber-500/5 dark:shadow-none">
-          <p className="text-sm font-semibold text-slate-500 dark:text-white/60">
-            Pendientes
-          </p>
-          <h3 className="mt-2 text-3xl font-black text-amber-600 dark:text-amber-300">
-            {resumen.pendientes}
-          </h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-white/45">
-            Por revisar
-          </p>
-        </article>
-
-        <article className="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70 p-5 shadow-sm shadow-indigo-100/50 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:from-white/5 dark:to-indigo-500/5 dark:shadow-none">
-          <p className="text-sm font-semibold text-slate-500 dark:text-white/60">
-            Entrevistas
-          </p>
-          <h3 className="mt-2 text-3xl font-black text-indigo-600 dark:text-indigo-300">
-            {resumen.entrevistas}
-          </h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-white/45">
-            En proceso activo
-          </p>
-        </article>
-
-        <article className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/70 p-5 shadow-sm shadow-emerald-100/50 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:from-white/5 dark:to-emerald-500/5 dark:shadow-none">
-          <p className="text-sm font-semibold text-slate-500 dark:text-white/60">
-            Aceptados
-          </p>
-          <h3 className="mt-2 text-3xl font-black text-emerald-600 dark:text-emerald-300">
-            {resumen.aceptados}
-          </h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-white/45">
-            Proceso exitoso
-          </p>
-        </article>
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard
+          title="Total candidatos"
+          value={resumen.total}
+          subtitle="Según filtros aplicados"
+          tone="blue"
+        />
+        <SummaryCard
+          title="Pendientes"
+          value={resumen.pendientes}
+          subtitle="Por revisar"
+          tone="amber"
+        />
+        <SummaryCard
+          title="Entrevistas"
+          value={resumen.entrevistas}
+          subtitle="En proceso activo"
+          tone="indigo"
+        />
+        <SummaryCard
+          title="Aceptados"
+          value={resumen.aceptados}
+          subtitle="Proceso exitoso"
+          tone="emerald"
+        />
       </section>
 
-      <section className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-        <div className="mb-4 flex items-center gap-2">
+      <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-blue-100/40 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+        <div className="mb-3 flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
             <Briefcase className="h-4 w-4" />
           </div>
-          <h2 className="text-base font-black text-slate-950 dark:text-white">
-            Selección de oferta laboral
-          </h2>
+          <div>
+            <h2 className="text-sm font-black text-slate-950 dark:text-white">
+              Selección de oferta laboral
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-white/50">
+              Elige la oferta para ver sus postulantes
+            </p>
+          </div>
         </div>
 
-        <select
-          value={selectedOferta}
-          onChange={(event) => setSelectedOferta(event.target.value)}
-          disabled={loadingOfertas}
-          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:text-white dark:focus:border-blue-400 dark:focus:bg-white/15 dark:focus:ring-blue-500/20"
-        >
-          <option value="">
-            {loadingOfertas ? 'Cargando ofertas...' : 'Selecciona una oferta'}
-          </option>
-
-          {ofertas.map((oferta) => (
-            <option key={oferta.id} value={oferta.id}>
-              {oferta.titulo} ({oferta._count?.postulaciones ?? 0} postulantes)
+        <SelectWrapper>
+          <select
+            value={selectedOferta}
+            onChange={(event) => setSelectedOferta(event.target.value)}
+            disabled={loadingOfertas}
+            className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:bg-slate-900 dark:focus:ring-blue-500/20"
+          >
+            <option value="">
+              {loadingOfertas ? 'Cargando ofertas...' : 'Selecciona una oferta'}
             </option>
-          ))}
-        </select>
+
+            {ofertas.map((oferta) => (
+              <option key={oferta.id} value={oferta.id}>
+                {oferta.titulo} ({oferta._count?.postulaciones ?? 0} postulantes)
+              </option>
+            ))}
+          </select>
+        </SelectWrapper>
 
         {selectedOfertaInfo && (
-          <p className="mt-3 text-xs font-medium text-slate-400 dark:text-white/45">
-            Oferta seleccionada: {selectedOfertaInfo.titulo}
-          </p>
+          <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+            Oferta seleccionada: <span className="font-black">{selectedOfertaInfo.titulo}</span>
+          </div>
         )}
       </section>
 
-      <section className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+      <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-blue-100/40 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_240px]">
           <div className="relative">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/45" />
@@ -473,17 +523,15 @@ export default function CandidatosPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar por nombre, DNI, correo o carrera..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40 dark:focus:border-blue-400 dark:focus:bg-white/15 dark:focus:ring-blue-500/20"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:placeholder:text-white/40 dark:focus:border-blue-400 dark:focus:bg-slate-900 dark:focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="relative">
-            <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/45" />
-
+          <SelectWrapper icon={<Filter className="h-4 w-4" />}>
             <select
               value={estadoFilter}
               onChange={(event) => setEstadoFilter(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:focus:border-blue-400 dark:focus:bg-white/15 dark:focus:ring-blue-500/20"
+              className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-11 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:bg-slate-900 dark:focus:ring-blue-500/20"
             >
               <option value="">Todos los estados</option>
               {ESTADOS.map((estado) => (
@@ -492,19 +540,19 @@ export default function CandidatosPage() {
                 </option>
               ))}
             </select>
-          </div>
+          </SelectWrapper>
         </div>
       </section>
 
       {error && (
-        <section className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+        <section className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </section>
       )}
 
-      <section className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-        <div className="border-b border-slate-100 px-6 py-5 dark:border-white/10">
-          <h2 className="text-lg font-black text-slate-950 dark:text-white">
+      <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/40 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+        <div className="border-b border-slate-100 px-5 py-4 dark:border-white/10">
+          <h2 className="text-base font-black text-slate-950 dark:text-white">
             Lista de candidatos
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-white/55">
@@ -518,22 +566,22 @@ export default function CandidatosPage() {
           <table className="w-full min-w-[900px]">
             <thead className="bg-slate-50 dark:bg-white/5">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
+                <th className="px-5 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
                   Candidato
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
+                <th className="px-5 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
                   Carrera
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
+                <th className="px-5 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
                   Contacto
                 </th>
-                <th className="px-6 py-3.5 text-center text-xs font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
+                <th className="px-5 py-3 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
                   Fecha
                 </th>
-                <th className="px-6 py-3.5 text-center text-xs font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
+                <th className="px-5 py-3 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
                   Estado
                 </th>
-                <th className="px-6 py-3.5 text-center text-xs font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
+                <th className="px-5 py-3 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
                   Acciones
                 </th>
               </tr>
@@ -551,9 +599,9 @@ export default function CandidatosPage() {
                       key={postulacion.id}
                       className="transition-colors hover:bg-blue-50/40 dark:hover:bg-white/5"
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-sm font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-sm font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
                             {getInitials(egresado?.nombre, egresado?.apellido)}
                           </div>
 
@@ -569,7 +617,7 @@ export default function CandidatosPage() {
                         </div>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <p className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-white/75">
                           <BookOpen className="h-4 w-4 text-slate-400 dark:text-white/45" />
                           {egresado?.carrera ?? '—'}
@@ -580,7 +628,7 @@ export default function CandidatosPage() {
                         </p>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <div className="space-y-1">
                           <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-white/55">
                             <Mail className="h-3.5 w-3.5" />
@@ -594,7 +642,7 @@ export default function CandidatosPage() {
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-5 py-4 text-center">
                         <span className="text-xs font-bold text-slate-500 dark:text-white/55">
                           {formatDate(
                             postulacion.fechaPostulacion ??
@@ -603,38 +651,40 @@ export default function CandidatosPage() {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-5 py-4 text-center">
                         <EstadoBadge estado={postulacion.estado} />
                       </td>
 
-                      <td className="px-6 py-4 text-center">
-                        <select
-                          value={
-                            isEstadoPostulacion(postulacion.estado)
-                              ? postulacion.estado
-                              : 'PENDIENTE'
-                          }
-                          onChange={(event) =>
-                            handleCambiarEstado(
-                              postulacion.id,
-                              event.target.value,
-                            )
-                          }
-                          className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 outline-none transition hover:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15 dark:focus:border-blue-400 dark:focus:ring-blue-500/20"
-                        >
-                          {ESTADOS.map((estado) => (
-                            <option key={estado} value={estado}>
-                              {ESTADO_LABELS[estado]}
-                            </option>
-                          ))}
-                        </select>
+                      <td className="px-5 py-4 text-center">
+                        <SelectWrapper>
+                          <select
+                            value={
+                              isEstadoPostulacion(postulacion.estado)
+                                ? postulacion.estado
+                                : 'PENDIENTE'
+                            }
+                            onChange={(event) =>
+                              handleCambiarEstado(
+                                postulacion.id,
+                                event.target.value,
+                              )
+                            }
+                            className="min-w-[160px] appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2 pr-10 text-xs font-bold text-slate-700 outline-none transition hover:bg-slate-50 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-900 dark:focus:border-blue-400 dark:focus:ring-blue-500/20"
+                          >
+                            {ESTADOS.map((estado) => (
+                              <option key={estado} value={estado}>
+                                {ESTADO_LABELS[estado]}
+                              </option>
+                            ))}
+                          </select>
+                        </SelectWrapper>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-14 text-center">
+                  <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 dark:bg-white/10">
                       <GraduationCap className="h-7 w-7 text-slate-300 dark:text-white/35" />
                     </div>
