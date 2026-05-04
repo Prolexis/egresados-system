@@ -237,41 +237,77 @@ export default function AdminDashboard() {
             loading={loading}
           >
             <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={data?.graficas?.ofertasPorMes || []}>
+              <AreaChart
+                data={(data?.graficas?.ofertasPorMes || []).map((item: any) => ({
+                  ...item,
+                  // normaliza cualquier formato de fecha que venga del backend:
+                  // "2026-05-01" → "May" | "May 2026" → "May" | "Ene" → "Ene"
+                  _label: (() => {
+                    const raw: string = item.mes ?? '';
+                    // formato ISO: 2026-05-01
+                    if (/^\d{4}-\d{2}/.test(raw)) {
+                      return new Date(raw + 'T00:00:00').toLocaleString('es-PE', { month: 'short' });
+                    }
+                    // formato "May 2026" o "January 2026"
+                    if (/\d{4}/.test(raw)) {
+                      const d = new Date(raw);
+                      if (!isNaN(d.getTime())) {
+                        return d.toLocaleString('es-PE', { month: 'short' });
+                      }
+                      // si no parsea, tomar la primera palabra
+                      return raw.split(' ')[0];
+                    }
+                    return raw; // ya viene corto ("Ene", "Feb"…)
+                  })(),
+                }))}
+              >
                 <defs>
                   <linearGradient id="colorOfertas" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.15} />
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.18} />
                     <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorPostulaciones" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15} />
+                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.18} />
                     <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.5} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  strokeOpacity={0.4}
+                  vertical={false}
+                />
                 <XAxis
-                  dataKey="mes"
+                  dataKey="_label"
                   tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
                   axisLine={false}
                   tickLine={false}
+                  dy={6}
                 />
                 <YAxis
                   tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
                   axisLine={false}
                   tickLine={false}
+                  dx={-4}
+                  width={32}
                 />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelFormatter={(label) => `Mes: ${label}`}
+                  formatter={(value: any, name: string) => [value, name]}
+                />
                 <Legend
                   iconType="circle"
                   iconSize={7}
-                  wrapperStyle={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}
+                  wrapperStyle={{ fontSize: '12px', color: 'var(--color-text-secondary)', paddingTop: '8px' }}
                 />
                 <Area
                   type="monotone"
                   dataKey="ofertas"
                   stroke="#2563EB"
-                  strokeWidth={2}
-                  dot={false}
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: '#2563EB', strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: '#2563EB', strokeWidth: 2, stroke: 'var(--color-bg-surface)' }}
                   fillOpacity={1}
                   fill="url(#colorOfertas)"
                   name="Ofertas"
@@ -280,8 +316,9 @@ export default function AdminDashboard() {
                   type="monotone"
                   dataKey="postulaciones"
                   stroke="#EF4444"
-                  strokeWidth={2}
-                  dot={false}
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: '#EF4444', strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: '#EF4444', strokeWidth: 2, stroke: 'var(--color-bg-surface)' }}
                   fillOpacity={1}
                   fill="url(#colorPostulaciones)"
                   name="Postulaciones"
@@ -505,4 +542,3 @@ export default function AdminDashboard() {
     </main>
   );
 }
-
