@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -21,9 +22,6 @@ import {
   Wifi,
 } from 'lucide-react';
 
-/* ─────────────────────────────────────────────
-   TYPES & SCHEMA
-───────────────────────────────────────────── */
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Mínimo 6 caracteres'),
@@ -40,12 +38,12 @@ const DEMO_CREDS = {
   empresa: {
     label: 'Empresa',
     email: 'empresa@demo.pe',
-    password: 'Empresa123*',
+    password: 'password',
   },
   egresado: {
     label: 'Egresado',
     email: 'egresado@demo.pe',
-    password: 'Egresado123*',
+    password: 'password',
   },
 } as const;
 
@@ -55,10 +53,7 @@ const STATS = [
   { Icon: ShieldCheck, label: 'Empleados', target: 340 },
 ];
 
-/* ─────────────────────────────────────────────
-   ANIMATED COUNTER
-───────────────────────────────────────────── */
-function useCountUp(target: number, duration = 1800) {
+function useCountUp(target: number, duration = 1400) {
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -66,16 +61,14 @@ function useCountUp(target: number, duration = 1800) {
 
     const step = (ts: number) => {
       if (!start) start = ts;
-
       const progress = Math.min((ts - start) / duration, 1);
       const ease = 1 - Math.pow(1 - progress, 3);
-
       setValue(Math.round(ease * target));
 
       if (progress < 1) requestAnimationFrame(step);
     };
 
-    const timeout = setTimeout(() => requestAnimationFrame(step), 400);
+    const timeout = setTimeout(() => requestAnimationFrame(step), 250);
 
     return () => clearTimeout(timeout);
   }, [target, duration]);
@@ -103,9 +96,6 @@ function StatCard({
   );
 }
 
-/* ─────────────────────────────────────────────
-   PARTICLE CANVAS
-───────────────────────────────────────────── */
 function ParticleCanvas({ isDark }: { isDark: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -114,7 +104,6 @@ function ParticleCanvas({ isDark }: { isDark: boolean }) {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d')!;
-
     let W = canvas.offsetWidth;
     let H = canvas.offsetHeight;
 
@@ -123,13 +112,13 @@ function ParticleCanvas({ isDark }: { isDark: boolean }) {
 
     const color = isDark ? '201,168,76' : '37,99,235';
 
-    const particles = Array.from({ length: 45 }, () => ({
+    const particles = Array.from({ length: 35 }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: Math.random() * 1.6 + 0.3,
-      dx: (Math.random() - 0.5) * 0.3,
-      dy: (Math.random() - 0.5) * 0.3,
-      o: Math.random() * 0.35 + 0.05,
+      r: Math.random() * 1.4 + 0.3,
+      dx: (Math.random() - 0.5) * 0.25,
+      dy: (Math.random() - 0.5) * 0.25,
+      o: Math.random() * 0.32 + 0.05,
     }));
 
     let raf: number;
@@ -170,9 +159,6 @@ function ParticleCanvas({ isDark }: { isDark: boolean }) {
   return <canvas ref={canvasRef} className="particle-canvas" />;
 }
 
-/* ─────────────────────────────────────────────
-   MAIN PAGE
-───────────────────────────────────────────── */
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
@@ -237,7 +223,6 @@ export default function LoginPage() {
 
         .theme-dark {
           --bg-page: #090B10;
-          --bg-left: #0B0F1A;
           --bg-right: #0E1018;
           --bg-input: #141720;
           --bg-input-focus: #1A1F2E;
@@ -250,9 +235,7 @@ export default function LoginPage() {
           --accent-dim: rgba(201,168,76,0.14);
           --text-primary: #F0ECE4;
           --text-muted: #8B8D99;
-          --text-invert: #090B10;
           --danger: #FF6B6B;
-          --success: #22C55E;
           --left-grad: linear-gradient(145deg,#0A0D16 0%,#121830 50%,#0D1020 100%);
           --glow1: rgba(201,168,76,0.10);
           --glow2: rgba(99,102,241,0.10);
@@ -268,22 +251,19 @@ export default function LoginPage() {
 
         .theme-light {
           --bg-page: #EEF2F8;
-          --bg-left: #1E3A5F;
           --bg-right: #FFFFFF;
           --bg-input: #F4F6FA;
           --bg-input-focus: #FFFFFF;
           --bg-stat: rgba(255,255,255,0.14);
-          --bg-demo: rgba(255,255,255,0.12);
-          --border: rgba(255,255,255,0.18);
+          --bg-demo: rgba(37,99,235,0.04);
+          --border: rgba(15,23,42,0.10);
           --border-focus: #2563EB;
           --accent: #2563EB;
           --accent-light: #60A5FA;
           --accent-dim: rgba(37,99,235,0.10);
           --text-primary: #1A1F2E;
           --text-muted: #6B7280;
-          --text-invert: #FFFFFF;
           --danger: #DC2626;
-          --success: #16A34A;
           --left-grad: linear-gradient(145deg,#1E3A5F 0%,#2563EB 55%,#1D4ED8 100%);
           --glow1: rgba(37,99,235,0.15);
           --glow2: rgba(124,58,237,0.12);
@@ -300,35 +280,34 @@ export default function LoginPage() {
         .login-page {
           font-family: 'DM Sans', sans-serif;
           background: var(--bg-page);
-          min-height: 100vh;
+          min-height: 100dvh;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 1.5rem 1rem;
+          padding: 14px;
           transition: background 0.4s;
         }
 
         .login-card {
           width: 100%;
-          max-width: 1080px;
+          max-width: 1040px;
+          height: min(630px, calc(100dvh - 28px));
           display: grid;
           grid-template-columns: 1fr 1fr;
           border-radius: 28px;
           overflow: hidden;
-          box-shadow: 0 32px 80px var(--shadow-panel);
+          box-shadow: 0 28px 70px var(--shadow-panel);
           border: 1px solid var(--border);
-          transition: box-shadow 0.4s, border-color 0.4s;
         }
 
         .left-panel {
           background: var(--left-grad);
-          padding: 52px 44px;
+          padding: 34px 38px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           position: relative;
           overflow: hidden;
-          min-height: 600px;
         }
 
         .particle-canvas {
@@ -343,8 +322,8 @@ export default function LoginPage() {
           position: absolute;
           top: -80px;
           left: -80px;
-          width: 320px;
-          height: 320px;
+          width: 300px;
+          height: 300px;
           border-radius: 50%;
           background: radial-gradient(circle, var(--glow1) 0%, transparent 70%);
           pointer-events: none;
@@ -352,8 +331,8 @@ export default function LoginPage() {
 
         .left-glow2 {
           position: absolute;
-          bottom: -60px;
-          right: -60px;
+          bottom: -70px;
+          right: -70px;
           width: 260px;
           height: 260px;
           border-radius: 50%;
@@ -370,8 +349,8 @@ export default function LoginPage() {
         }
 
         .left-logo-icon {
-          width: 46px;
-          height: 46px;
+          width: 44px;
+          height: 44px;
           border-radius: 13px;
           background: rgba(255,255,255,0.12);
           border: 1px solid rgba(255,255,255,0.18);
@@ -385,7 +364,6 @@ export default function LoginPage() {
           font-family: 'Syne', sans-serif;
           font-weight: 800;
           font-size: 17px;
-          letter-spacing: -0.4px;
           color: #FFFFFF;
           flex: 1;
         }
@@ -402,7 +380,6 @@ export default function LoginPage() {
           cursor: pointer;
           transition: background 0.25s, transform 0.2s;
           color: rgba(255,255,255,0.80);
-          flex-shrink: 0;
         }
 
         .theme-toggle:hover {
@@ -413,6 +390,7 @@ export default function LoginPage() {
         .left-hero {
           position: relative;
           z-index: 1;
+          margin: 26px 0;
         }
 
         .left-eyebrow {
@@ -424,7 +402,7 @@ export default function LoginPage() {
           letter-spacing: 3px;
           text-transform: uppercase;
           color: var(--accent-light);
-          margin-bottom: 20px;
+          margin-bottom: 16px;
         }
 
         .left-eyebrow::before {
@@ -433,17 +411,16 @@ export default function LoginPage() {
           width: 24px;
           height: 1px;
           background: var(--accent-light);
-          opacity: 0.7;
         }
 
         .left-title {
           font-family: 'Syne', sans-serif;
-          font-size: clamp(34px, 3.5vw, 50px);
+          font-size: clamp(32px, 3.4vw, 46px);
           font-weight: 800;
-          line-height: 1.05;
+          line-height: 1.04;
           letter-spacing: -1.5px;
           color: #FFFFFF;
-          margin-bottom: 18px;
+          margin-bottom: 14px;
         }
 
         .left-title span {
@@ -451,10 +428,10 @@ export default function LoginPage() {
         }
 
         .left-sub {
-          font-size: 14.5px;
+          font-size: 14px;
           color: rgba(255,255,255,0.62);
-          line-height: 1.75;
-          max-width: 320px;
+          line-height: 1.65;
+          max-width: 330px;
           font-weight: 300;
         }
 
@@ -465,7 +442,7 @@ export default function LoginPage() {
           font-size: 11px;
           color: #4ADE80;
           font-weight: 500;
-          margin-bottom: 14px;
+          margin-bottom: 12px;
           position: relative;
           z-index: 1;
         }
@@ -476,25 +453,18 @@ export default function LoginPage() {
           border-radius: 50%;
           background: #22C55E;
           animation: pulse-ring 2s infinite;
-          flex-shrink: 0;
         }
 
         @keyframes pulse-ring {
-          0% {
-            box-shadow: 0 0 0 0 rgba(34,197,94,0.6);
-          }
-          70% {
-            box-shadow: 0 0 0 8px rgba(34,197,94,0);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(34,197,94,0);
-          }
+          0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+          70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+          100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
         }
 
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(3,1fr);
-          gap: 10px;
+          gap: 9px;
           position: relative;
           z-index: 1;
         }
@@ -502,46 +472,39 @@ export default function LoginPage() {
         .stat-card {
           background: var(--bg-stat);
           border: 1px solid rgba(255,255,255,0.10);
-          border-radius: 16px;
-          padding: 16px 10px;
+          border-radius: 15px;
+          padding: 12px 8px;
           text-align: center;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 5px;
-          transition: border-color 0.3s, transform 0.3s;
-          cursor: default;
+          gap: 4px;
           backdrop-filter: blur(6px);
         }
 
-        .stat-card:hover {
-          border-color: rgba(255,255,255,0.22);
-          transform: translateY(-3px);
-        }
-
         .stat-icon {
-          width: 18px;
-          height: 18px;
+          width: 17px;
+          height: 17px;
           color: rgba(255,255,255,0.45);
         }
 
         .stat-num {
           font-family: 'Syne', sans-serif;
-          font-size: 22px;
+          font-size: 20px;
           font-weight: 800;
           color: var(--stat-num-color);
         }
 
         .stat-label {
-          font-size: 10px;
-          color: rgba(255,255,255,0.45);
+          font-size: 9px;
+          color: rgba(255,255,255,0.48);
           text-transform: uppercase;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
         }
 
         .right-panel {
           background: var(--bg-right);
-          padding: 52px 44px;
+          padding: 32px 38px;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -552,12 +515,12 @@ export default function LoginPage() {
           display: none;
           align-items: center;
           gap: 10px;
-          margin-bottom: 32px;
+          margin-bottom: 18px;
         }
 
         .mobile-logo-icon {
-          width: 40px;
-          height: 40px;
+          width: 38px;
+          height: 38px;
           border-radius: 11px;
           background: var(--accent-dim);
           border: 1px solid var(--border);
@@ -584,67 +547,56 @@ export default function LoginPage() {
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: background 0.25s;
           color: var(--text-muted);
-        }
-
-        .mobile-theme-toggle:hover {
-          background: var(--accent-dim);
-          color: var(--accent);
         }
 
         .form-title {
           font-family: 'Syne', sans-serif;
-          font-size: 26px;
+          font-size: 25px;
           font-weight: 800;
           letter-spacing: -0.7px;
           color: var(--text-primary);
-          margin-bottom: 5px;
-          transition: color 0.3s;
+          margin-bottom: 4px;
         }
 
         .form-sub {
-          font-size: 14px;
+          font-size: 13.5px;
           color: var(--text-muted);
-          margin-bottom: 28px;
-          transition: color 0.3s;
+          margin-bottom: 17px;
         }
 
         .divider {
           display: flex;
           align-items: center;
           gap: 12px;
-          margin-bottom: 22px;
+          margin-bottom: 16px;
         }
 
         .divider-line {
           flex: 1;
           height: 1px;
           background: var(--divider);
-          transition: background 0.3s;
         }
 
         .divider-text {
           font-size: 10px;
           color: var(--text-muted);
           text-transform: uppercase;
-          letter-spacing: 1.5px;
-          transition: color 0.3s;
+          letter-spacing: 1.4px;
         }
 
         .field {
-          margin-bottom: 16px;
+          margin-bottom: 13px;
         }
 
         .field-label {
           display: block;
-          font-size: 11px;
-          font-weight: 500;
+          font-size: 10.5px;
+          font-weight: 600;
           color: var(--text-muted);
-          margin-bottom: 7px;
+          margin-bottom: 6px;
           text-transform: uppercase;
           letter-spacing: 1px;
-          transition: color 0.3s;
         }
 
         .input-wrap {
@@ -659,9 +611,9 @@ export default function LoginPage() {
           color: var(--text-primary);
           font-family: 'DM Sans', sans-serif;
           font-size: 14px;
-          padding: 13px 46px;
+          padding: 12px 46px;
           outline: none;
-          transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, color 0.3s;
+          transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
           -webkit-appearance: none;
         }
 
@@ -679,10 +631,6 @@ export default function LoginPage() {
           border-color: var(--danger) !important;
         }
 
-        .field-input.has-error:focus {
-          box-shadow: 0 0 0 3px rgba(220,38,38,0.10);
-        }
-
         .input-icon-left {
           position: absolute;
           left: 15px;
@@ -690,7 +638,6 @@ export default function LoginPage() {
           transform: translateY(-50%);
           color: var(--text-muted);
           pointer-events: none;
-          transition: color 0.2s;
           width: 17px;
           height: 17px;
         }
@@ -710,7 +657,6 @@ export default function LoginPage() {
           color: var(--text-muted);
           display: flex;
           align-items: center;
-          transition: color 0.2s;
           padding: 2px;
         }
 
@@ -719,8 +665,8 @@ export default function LoginPage() {
         }
 
         .error-msg {
-          margin-top: 5px;
-          font-size: 12px;
+          margin-top: 4px;
+          font-size: 11.5px;
           color: var(--danger);
           font-weight: 500;
         }
@@ -728,24 +674,24 @@ export default function LoginPage() {
         .error-banner {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 12px 14px;
+          gap: 8px;
+          padding: 10px 12px;
           border-radius: 12px;
           background: rgba(220,38,38,0.07);
           border: 1px solid rgba(220,38,38,0.2);
           color: var(--danger);
-          font-size: 13px;
-          margin-bottom: 14px;
+          font-size: 12.5px;
+          margin-bottom: 12px;
         }
 
         .submit-btn {
           width: 100%;
-          padding: 14px;
+          padding: 13px;
           border-radius: 14px;
           border: none;
           cursor: pointer;
           font-family: 'Syne', sans-serif;
-          font-size: 15px;
+          font-size: 14.5px;
           font-weight: 700;
           letter-spacing: 0.4px;
           color: #FFFFFF;
@@ -755,7 +701,7 @@ export default function LoginPage() {
           align-items: center;
           justify-content: center;
           gap: 10px;
-          margin-top: 6px;
+          margin-top: 4px;
           box-shadow: 0 4px 20px var(--shadow-btn);
           position: relative;
           overflow: hidden;
@@ -781,10 +727,6 @@ export default function LoginPage() {
           transform: translateX(100%);
         }
 
-        .submit-btn:active {
-          transform: scale(0.98) translateY(0);
-        }
-
         .submit-btn:disabled {
           opacity: 0.65;
           cursor: not-allowed;
@@ -792,34 +734,29 @@ export default function LoginPage() {
         }
 
         .spinner {
-          width: 20px;
-          height: 20px;
-          border: 2.5px solid rgba(255,255,255,0.25);
+          width: 19px;
+          height: 19px;
+          border: 2.4px solid rgba(255,255,255,0.25);
           border-top-color: #FFFFFF;
           border-radius: 50%;
           animation: spin 0.7s linear infinite;
-          flex-shrink: 0;
         }
 
         @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
+          to { transform: rotate(360deg); }
         }
 
         .form-footer {
-          margin-top: 20px;
+          margin-top: 13px;
           text-align: center;
-          font-size: 13px;
+          font-size: 12.5px;
           color: var(--text-muted);
-          transition: color 0.3s;
         }
 
         .form-footer a {
           color: var(--accent);
           font-weight: 600;
           text-decoration: none;
-          transition: color 0.2s, text-decoration 0.2s;
         }
 
         .form-footer a:hover {
@@ -827,38 +764,56 @@ export default function LoginPage() {
         }
 
         .compact-demo-box {
-          margin-top: 18px;
-          padding: 12px;
+          margin-top: 13px;
+          padding: 10px;
           border-radius: 14px;
           background: var(--bg-demo);
           border: 1px solid var(--border);
         }
 
-        .compact-demo-title {
-          font-size: 10px;
-          font-weight: 700;
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: 1.5px;
+        .compact-demo-title-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
           margin-bottom: 8px;
         }
 
+        .compact-demo-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 1.4px;
+        }
+
+        .compact-demo-password {
+          font-size: 10.5px;
+          color: var(--text-muted);
+          white-space: nowrap;
+        }
+
+        .compact-demo-password strong {
+          color: var(--accent);
+        }
+
         .compact-demo-list {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 7px;
         }
 
         .compact-demo-item {
           width: 100%;
+          min-width: 0;
           border: 1px solid var(--border);
           background: var(--bg-input);
-          border-radius: 10px;
-          padding: 8px 10px;
-          display: grid;
-          grid-template-columns: 72px 1fr;
-          align-items: center;
-          gap: 10px;
+          border-radius: 11px;
+          padding: 8px 7px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 3px;
           cursor: pointer;
           transition: all 0.2s ease;
           text-align: left;
@@ -871,22 +826,14 @@ export default function LoginPage() {
         }
 
         .compact-demo-role {
-          font-size: 12px;
-          font-weight: 700;
+          font-size: 11.5px;
+          font-weight: 800;
           color: var(--text-primary);
-          white-space: nowrap;
         }
 
-        .compact-demo-data {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          min-width: 0;
-        }
-
-        .compact-demo-email,
-        .compact-demo-pass {
-          font-size: 11px;
+        .compact-demo-email {
+          width: 100%;
+          font-size: 9.7px;
           color: var(--text-muted);
           font-family: monospace;
           overflow: hidden;
@@ -894,77 +841,112 @@ export default function LoginPage() {
           white-space: nowrap;
         }
 
-        .compact-demo-pass strong {
-          color: var(--accent);
-          font-weight: 700;
-        }
-
         @media (max-width: 860px) {
+          .login-page {
+            padding: 10px;
+          }
+
           .login-card {
+            max-width: 460px;
+            height: auto;
+            min-height: calc(100dvh - 20px);
             grid-template-columns: 1fr;
-            max-width: 480px;
           }
 
           .left-panel {
-            padding: 36px 28px 32px;
-            min-height: auto;
+            display: none;
           }
 
           .right-panel {
-            padding: 36px 28px 40px;
+            padding: 26px 24px;
           }
 
           .mobile-logo {
             display: flex;
           }
-
-          .left-logo .theme-toggle {
-            display: none;
-          }
         }
 
         @media (max-width: 480px) {
-          .login-page {
-            padding: 1rem 0.5rem;
-          }
-
           .login-card {
-            border-radius: 20px;
-          }
-
-          .left-panel {
-            padding: 28px 22px 26px;
+            border-radius: 22px;
           }
 
           .right-panel {
-            padding: 28px 22px 32px;
+            padding: 22px 18px;
           }
 
-          .stats-grid {
-            gap: 8px;
+          .form-title {
+            font-size: 23px;
           }
 
-          .stat-card {
-            padding: 12px 6px;
+          .form-sub {
+            margin-bottom: 14px;
           }
 
-          .stat-num {
-            font-size: 18px;
+          .compact-demo-list {
+            grid-template-columns: 1fr;
+          }
+
+          .compact-demo-title-row {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 3px;
+          }
+
+          .compact-demo-email {
+            font-size: 10.5px;
+          }
+        }
+
+        @media (max-height: 720px) and (min-width: 861px) {
+          .login-card {
+            height: calc(100dvh - 20px);
+          }
+
+          .left-panel {
+            padding: 26px 34px;
+          }
+
+          .right-panel {
+            padding: 24px 34px;
           }
 
           .left-title {
-            font-size: 30px;
+            font-size: 36px;
           }
 
-          .compact-demo-item {
-            grid-template-columns: 1fr;
-            gap: 4px;
+          .left-sub {
+            font-size: 13px;
+            line-height: 1.5;
           }
 
-          .compact-demo-email,
-          .compact-demo-pass {
-            white-space: normal;
-            word-break: break-all;
+          .stat-card {
+            padding: 9px 6px;
+          }
+
+          .stat-num {
+            font-size: 17px;
+          }
+
+          .form-title {
+            font-size: 23px;
+          }
+
+          .form-sub {
+            margin-bottom: 12px;
+          }
+
+          .field {
+            margin-bottom: 10px;
+          }
+
+          .field-input {
+            padding-top: 10.5px;
+            padding-bottom: 10.5px;
+          }
+
+          .compact-demo-box {
+            margin-top: 10px;
           }
         }
       `}</style>
@@ -992,7 +974,7 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <div className="left-hero" style={{ margin: '32px 0' }}>
+            <div className="left-hero">
               <div className="left-eyebrow">Plataforma Universitaria</div>
 
               <h1 className="left-title">
@@ -1068,7 +1050,7 @@ export default function LoginPage() {
                   <input
                     id="email"
                     type="email"
-                    placeholder="usuario@demo.edu.pe"
+                    placeholder="usuario@demo.pe"
                     autoComplete="off"
                     className={`field-input${errors.email ? ' has-error' : ''}`}
                     {...register('email')}
@@ -1089,7 +1071,7 @@ export default function LoginPage() {
                   <input
                     id="password"
                     type={showPass ? 'text' : 'password'}
-                    placeholder="Contraseña"
+                    placeholder="password"
                     autoComplete="new-password"
                     className={`field-input${errors.password ? ' has-error' : ''}`}
                     {...register('password')}
@@ -1128,7 +1110,12 @@ export default function LoginPage() {
             </p>
 
             <div className="compact-demo-box">
-              <p className="compact-demo-title">Credenciales de prueba</p>
+              <div className="compact-demo-title-row">
+                <p className="compact-demo-title">Credenciales demo</p>
+                <p className="compact-demo-password">
+                  Clave: <strong>password</strong>
+                </p>
+              </div>
 
               <div className="compact-demo-list">
                 {Object.entries(DEMO_CREDS).map(([role, creds]) => (
@@ -1137,15 +1124,10 @@ export default function LoginPage() {
                     type="button"
                     className="compact-demo-item"
                     onClick={() => fillDemo(role as keyof typeof DEMO_CREDS)}
+                    title={`${creds.email} / ${creds.password}`}
                   >
                     <span className="compact-demo-role">{creds.label}</span>
-
-                    <span className="compact-demo-data">
-                      <span className="compact-demo-email">{creds.email}</span>
-                      <span className="compact-demo-pass">
-                        Clave: <strong>{creds.password}</strong>
-                      </span>
-                    </span>
+                    <span className="compact-demo-email">{creds.email}</span>
                   </button>
                 ))}
               </div>
