@@ -196,29 +196,29 @@ function StatCard({
   subtitle: string;
 }) {
   return (
-    <article className="group relative overflow-hidden rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+    <article className="group relative overflow-hidden rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-blue-100/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:shadow-none">
       <div
-        className="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-10 blur-2xl transition-all duration-300 group-hover:scale-125"
+        className="absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-10 blur-2xl transition-all duration-300 group-hover:scale-110"
         style={{ backgroundColor: color }}
       />
 
       <div
-        className="relative mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-white/80 dark:ring-white/10"
+        className="relative mb-3 flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-white/80 dark:ring-white/10"
         style={{ backgroundColor: `${color}18` }}
       >
-        <Icon className="h-6 w-6" style={{ color }} />
+        <Icon className="h-5 w-5" style={{ color }} />
       </div>
 
       <div className="relative">
-        <p className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
+        <p className="text-2xl font-black tracking-tight text-slate-950 dark:text-white">
           {value}
         </p>
 
-        <p className="mt-1 text-sm font-black text-slate-600 dark:text-white/70">
+        <p className="mt-0.5 text-sm font-black text-slate-600 dark:text-white/70">
           {title}
         </p>
 
-        <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-white/45">
+        <p className="mt-0.5 text-xs font-semibold text-slate-400 dark:text-white/45">
           {subtitle}
         </p>
       </div>
@@ -228,15 +228,15 @@ function StatCard({
 
 function ReportSkeleton() {
   return (
-    <div className="flex items-center gap-4 px-6 py-5">
-      <div className="h-12 w-12 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/10" />
+    <div className="flex items-center gap-4 px-5 py-4">
+      <div className="h-10 w-10 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/10" />
 
-      <div className="flex-1 space-y-3">
+      <div className="flex-1 space-y-2">
         <div className="h-4 w-2/3 animate-pulse rounded-lg bg-slate-100 dark:bg-white/10" />
         <div className="h-3 w-1/3 animate-pulse rounded-lg bg-slate-100 dark:bg-white/10" />
       </div>
 
-      <div className="h-8 w-28 animate-pulse rounded-full bg-slate-100 dark:bg-white/10" />
+      <div className="h-8 w-24 animate-pulse rounded-full bg-slate-100 dark:bg-white/10" />
     </div>
   );
 }
@@ -382,24 +382,23 @@ export default function ReportesPage() {
   }, [reportes]);
 
   return (
-    <main className="space-y-7 animate-fadeIn">
-      <section className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 p-8 shadow-xl shadow-blue-100/60 dark:border-slate-700 dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:shadow-none">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl dark:bg-blue-500/20" />
-        <div className="absolute bottom-0 left-1/3 h-52 w-52 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-500/20" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.85),transparent_35%)] dark:bg-none" />
+    <main className="space-y-5 animate-fadeIn">
+      <section className="relative overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 px-6 py-5 shadow-md shadow-blue-100/50 dark:border-slate-700 dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:shadow-none">
+        <div className="absolute -right-20 -top-24 h-56 w-56 rounded-full bg-blue-300/25 blur-3xl dark:bg-blue-500/15" />
+        <div className="absolute bottom-0 left-1/3 h-36 w-36 rounded-full bg-indigo-300/20 blur-3xl dark:bg-indigo-500/15" />
 
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white/75">
-              <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white/75">
+              <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-300" />
               Centro de reportes
             </div>
 
-            <h1 className="text-4xl font-black tracking-tight text-slate-950 md:text-5xl dark:text-white">
+            <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-4xl dark:text-white">
               Generación de Reportes
             </h1>
 
-            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 dark:text-white/70">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-white/70">
               Exporta información del sistema en formato PDF profesional para
               seguimiento académico, laboral y de gestión institucional.
             </p>
@@ -409,7 +408,7 @@ export default function ReportesPage() {
             type="button"
             onClick={cargarReportes}
             disabled={loadingReportes}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-6 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/15"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-5 py-2.5 text-sm font-black text-slate-950 shadow-md shadow-blue-100 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/15"
           >
             <RefreshCw
               className={`h-4 w-4 ${loadingReportes ? 'animate-spin' : ''}`}
@@ -419,7 +418,7 @@ export default function ReportesPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total"
           value={resumen.total}
@@ -453,16 +452,16 @@ export default function ReportesPage() {
         />
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
-        <aside className="space-y-5">
-          <div className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-            <div className="mb-6 flex items-start gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:ring-blue-500/20">
-                <Settings2 className="h-6 w-6 text-blue-700 dark:text-blue-300" />
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[380px_1fr]">
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+            <div className="mb-5 flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:ring-blue-500/20">
+                <Settings2 className="h-5 w-5 text-blue-700 dark:text-blue-300" />
               </div>
 
               <div>
-                <h2 className="text-lg font-black text-slate-950 dark:text-white">
+                <h2 className="text-base font-black text-slate-950 dark:text-white">
                   Configurar reporte
                 </h2>
 
@@ -472,7 +471,7 @@ export default function ReportesPage() {
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {['operacional', 'gestion'].map((cat) => (
                 <div key={cat}>
                   <div className="mb-3 flex items-center gap-2">
@@ -528,7 +527,7 @@ export default function ReportesPage() {
             </div>
 
             {tipoSeleccionado && (
-              <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+              <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/10">
                 <p className="mb-1 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-700 dark:text-blue-300">
                   <Filter className="h-3.5 w-3.5" />
                   Descripción
@@ -540,7 +539,7 @@ export default function ReportesPage() {
               </div>
             )}
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-5 space-y-4">
               {tipo === 'egresados_carrera' && (
                 <div>
                   <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/45">
@@ -604,10 +603,10 @@ export default function ReportesPage() {
           </div>
         </aside>
 
-        <section className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-          <div className="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+        <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+          <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
             <div>
-              <h2 className="text-lg font-black text-slate-950 dark:text-white">
+              <h2 className="text-base font-black text-slate-950 dark:text-white">
                 Reportes generados
               </h2>
 
@@ -637,12 +636,12 @@ export default function ReportesPage() {
               ))}
             </div>
           ) : reportes.length === 0 ? (
-            <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 ring-1 ring-blue-100 dark:bg-white/10 dark:ring-white/10">
-                <FileText className="h-8 w-8 text-blue-300 dark:text-white/35" />
+            <div className="px-6 py-14 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-3xl bg-blue-50 ring-1 ring-blue-100 dark:bg-white/10 dark:ring-white/10">
+                <FileText className="h-7 w-7 text-blue-300 dark:text-white/35" />
               </div>
 
-              <h3 className="mt-5 text-lg font-black text-slate-900 dark:text-white">
+              <h3 className="mt-4 text-base font-black text-slate-900 dark:text-white">
                 Sin reportes generados
               </h3>
 
@@ -663,13 +662,13 @@ export default function ReportesPage() {
                 return (
                   <article
                     key={r.id}
-                    className="group flex flex-col gap-4 px-6 py-5 transition-all hover:bg-blue-50/40 dark:hover:bg-white/5 lg:flex-row lg:items-center"
+                    className="group flex flex-col gap-4 px-5 py-4 transition-all hover:bg-blue-50/40 dark:hover:bg-white/5 lg:flex-row lg:items-center"
                   >
                     <div
-                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${est.bg} ring-1 ${est.ring}`}
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${est.bg} ring-1 ${est.ring}`}
                     >
                       <EstIcon
-                        className={`h-6 w-6 ${
+                        className={`h-5 w-5 ${
                           est.spin || isPolling ? 'animate-spin' : ''
                         }`}
                         style={{ color: est.color }}
