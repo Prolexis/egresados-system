@@ -196,14 +196,14 @@ function StatCard({
   subtitle: string;
 }) {
   return (
-    <article className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900">
+    <article className="group relative overflow-hidden rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:shadow-none">
       <div
         className="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-10 blur-2xl transition-all duration-300 group-hover:scale-125"
         style={{ backgroundColor: color }}
       />
 
       <div
-        className="relative mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-white/60 dark:ring-white/10"
+        className="relative mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-white/80 dark:ring-white/10"
         style={{ backgroundColor: `${color}18` }}
       >
         <Icon className="h-6 w-6" style={{ color }} />
@@ -214,11 +214,11 @@ function StatCard({
           {value}
         </p>
 
-        <p className="mt-1 text-sm font-black text-slate-600 dark:text-slate-300">
+        <p className="mt-1 text-sm font-black text-slate-600 dark:text-white/70">
           {title}
         </p>
 
-        <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">
+        <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-white/45">
           {subtitle}
         </p>
       </div>
@@ -229,14 +229,14 @@ function StatCard({
 function ReportSkeleton() {
   return (
     <div className="flex items-center gap-4 px-6 py-5">
-      <div className="h-12 w-12 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+      <div className="h-12 w-12 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/10" />
 
       <div className="flex-1 space-y-3">
-        <div className="h-4 w-2/3 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
-        <div className="h-3 w-1/3 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
+        <div className="h-4 w-2/3 animate-pulse rounded-lg bg-slate-100 dark:bg-white/10" />
+        <div className="h-3 w-1/3 animate-pulse rounded-lg bg-slate-100 dark:bg-white/10" />
       </div>
 
-      <div className="h-8 w-28 animate-pulse rounded-full bg-slate-100 dark:bg-slate-800" />
+      <div className="h-8 w-28 animate-pulse rounded-full bg-slate-100 dark:bg-white/10" />
     </div>
   );
 }
@@ -382,23 +382,24 @@ export default function ReportesPage() {
   }, [reportes]);
 
   return (
-    <main className="space-y-6">
-      <section className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 text-white shadow-xl dark:border-slate-700">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-24 h-44 w-44 rounded-full bg-rose-500/20 blur-3xl" />
+    <main className="space-y-7 animate-fadeIn">
+      <section className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 p-8 shadow-xl shadow-blue-100/60 dark:border-slate-700 dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:shadow-none">
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl dark:bg-blue-500/20" />
+        <div className="absolute bottom-0 left-1/3 h-52 w-52 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-500/20" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.85),transparent_35%)] dark:bg-none" />
 
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white/75">
-              <Sparkles className="h-4 w-4 text-blue-300" />
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white/75">
+              <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-300" />
               Centro de reportes
             </div>
 
-            <h1 className="text-4xl font-black tracking-tight">
+            <h1 className="text-4xl font-black tracking-tight text-slate-950 md:text-5xl dark:text-white">
               Generación de Reportes
             </h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 dark:text-white/70">
               Exporta información del sistema en formato PDF profesional para
               seguimiento académico, laboral y de gestión institucional.
             </p>
@@ -408,7 +409,7 @@ export default function ReportesPage() {
             type="button"
             onClick={cargarReportes}
             disabled={loadingReportes}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white px-5 py-3 text-sm font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-slate-100 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-6 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/15"
           >
             <RefreshCw
               className={`h-4 w-4 ${loadingReportes ? 'animate-spin' : ''}`}
@@ -454,7 +455,7 @@ export default function ReportesPage() {
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
         <aside className="space-y-5">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
             <div className="mb-6 flex items-start gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:ring-blue-500/20">
                 <Settings2 className="h-6 w-6 text-blue-700 dark:text-blue-300" />
@@ -465,7 +466,7 @@ export default function ReportesPage() {
                   Configurar reporte
                 </h2>
 
-                <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-sm font-medium text-slate-500 dark:text-white/55">
                   Selecciona el tipo y parámetros antes de generar el PDF.
                 </p>
               </div>
@@ -475,15 +476,15 @@ export default function ReportesPage() {
               {['operacional', 'gestion'].map((cat) => (
                 <div key={cat}>
                   <div className="mb-3 flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-50 ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 ring-1 ring-blue-100 dark:bg-white/10 dark:ring-white/10">
                       {cat === 'operacional' ? (
-                        <FileText className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <FileText className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                       ) : (
-                        <BarChart3 className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                       )}
                     </div>
 
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/45">
                       {cat === 'operacional'
                         ? 'Reportes operacionales'
                         : 'Reportes de gestión'}
@@ -501,21 +502,21 @@ export default function ReportesPage() {
                           onClick={() => setTipo(t.id)}
                           className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
                             active
-                              ? 'border-blue-200 bg-blue-50 shadow-sm dark:border-blue-500/30 dark:bg-blue-500/10'
-                              : 'border-slate-200 bg-slate-50 hover:border-blue-200 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500/30 dark:hover:bg-slate-700'
+                              ? 'border-blue-200 bg-blue-50 shadow-sm shadow-blue-100/70 dark:border-blue-500/30 dark:bg-blue-500/10 dark:shadow-none'
+                              : 'border-slate-200 bg-slate-50 hover:border-blue-200 hover:bg-white hover:shadow-sm dark:border-white/10 dark:bg-white/5 dark:hover:border-blue-500/30 dark:hover:bg-white/10'
                           }`}
                         >
                           <p
                             className={`text-sm font-black ${
                               active
                                 ? 'text-blue-700 dark:text-blue-300'
-                                : 'text-slate-700 dark:text-slate-200'
+                                : 'text-slate-700 dark:text-white/80'
                             }`}
                           >
                             {t.label}
                           </p>
 
-                          <p className="mt-1 line-clamp-2 text-xs font-medium text-slate-400 dark:text-slate-500">
+                          <p className="mt-1 line-clamp-2 text-xs font-medium text-slate-400 dark:text-white/45">
                             {t.desc}
                           </p>
                         </button>
@@ -542,7 +543,7 @@ export default function ReportesPage() {
             <div className="mt-6 space-y-4">
               {tipo === 'egresados_carrera' && (
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/45">
                     Carrera
                   </label>
 
@@ -554,14 +555,14 @@ export default function ReportesPage() {
                         carrera: e.target.value,
                       }))
                     }
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:bg-slate-800 dark:focus:ring-blue-500/20"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40 dark:focus:border-blue-400 dark:focus:bg-white/15 dark:focus:ring-blue-500/20"
                   />
                 </div>
               )}
 
               {tipo === 'empleabilidad' && (
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-400 dark:text-white/45">
                     Año de egreso
                   </label>
 
@@ -576,7 +577,7 @@ export default function ReportesPage() {
                         anioEgreso: e.target.value,
                       }))
                     }
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:bg-slate-800 dark:focus:ring-blue-500/20"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-white/40 dark:focus:border-blue-400 dark:focus:bg-white/15 dark:focus:ring-blue-500/20"
                   />
                 </div>
               )}
@@ -585,7 +586,7 @@ export default function ReportesPage() {
                 type="button"
                 onClick={handleGenerar}
                 disabled={generando}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-800 via-blue-700 to-rose-500 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-200/70 transition hover:-translate-y-0.5 hover:from-blue-700 hover:via-sky-600 hover:to-indigo-600 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:shadow-none"
               >
                 {generando ? (
                   <>
@@ -603,14 +604,14 @@ export default function ReportesPage() {
           </div>
         </aside>
 
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+        <section className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/50 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+          <div className="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
             <div>
               <h2 className="text-lg font-black text-slate-950 dark:text-white">
                 Reportes generados
               </h2>
 
-              <p className="mt-1 text-sm font-medium text-slate-400 dark:text-slate-500">
+              <p className="mt-1 text-sm font-medium text-slate-400 dark:text-white/45">
                 {loadingReportes
                   ? 'Cargando historial...'
                   : `${reportes.length} reporte(s) registrado(s)`}
@@ -621,7 +622,7 @@ export default function ReportesPage() {
               type="button"
               onClick={cargarReportes}
               disabled={loadingReportes}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-blue-100 bg-white text-slate-400 shadow-sm transition hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 dark:border-white/10 dark:bg-white/10 dark:text-white/55 dark:hover:bg-white/15 dark:hover:text-white"
             >
               <RefreshCw
                 className={`h-4 w-4 ${loadingReportes ? 'animate-spin' : ''}`}
@@ -630,27 +631,27 @@ export default function ReportesPage() {
           </div>
 
           {loadingReportes ? (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="divide-y divide-slate-100 dark:divide-white/10">
               {Array.from({ length: 5 }).map((_, index) => (
                 <ReportSkeleton key={index} />
               ))}
             </div>
           ) : reportes.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-50 dark:bg-slate-800">
-                <FileText className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 ring-1 ring-blue-100 dark:bg-white/10 dark:ring-white/10">
+                <FileText className="h-8 w-8 text-blue-300 dark:text-white/35" />
               </div>
 
               <h3 className="mt-5 text-lg font-black text-slate-900 dark:text-white">
                 Sin reportes generados
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-white/55">
                 Configura el tipo de reporte y genera tu primer PDF profesional.
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="divide-y divide-slate-100 dark:divide-white/10">
               {reportes.map((r) => {
                 const est = estadoIcon[r.estado] || estadoIcon.PENDIENTE;
                 const EstIcon = est.icon;
@@ -662,7 +663,7 @@ export default function ReportesPage() {
                 return (
                   <article
                     key={r.id}
-                    className="group flex flex-col gap-4 px-6 py-5 transition-all hover:bg-slate-50/80 dark:hover:bg-slate-800/60 lg:flex-row lg:items-center"
+                    className="group flex flex-col gap-4 px-6 py-5 transition-all hover:bg-blue-50/40 dark:hover:bg-white/5 lg:flex-row lg:items-center"
                   >
                     <div
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${est.bg} ring-1 ${est.ring}`}
@@ -694,7 +695,7 @@ export default function ReportesPage() {
                         {reporteLabel}
                       </h3>
 
-                      <p className="mt-1 text-xs font-bold text-slate-400 dark:text-slate-500">
+                      <p className="mt-1 text-xs font-bold text-slate-400 dark:text-white/45">
                         {formatDate(r.createdAt)}
                       </p>
                     </div>
@@ -704,7 +705,7 @@ export default function ReportesPage() {
                         type="button"
                         onClick={() => descargarReporte(r)}
                         disabled={isDownloading}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-900 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:bg-blue-600 dark:hover:bg-blue-500"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-black text-white shadow-sm shadow-blue-100 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:bg-blue-600 dark:shadow-none dark:hover:bg-blue-500"
                       >
                         {isDownloading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
