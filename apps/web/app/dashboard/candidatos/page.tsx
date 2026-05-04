@@ -358,7 +358,7 @@ export default function CandidatosPage() {
               Gestión de postulantes
             </div>
 
-            <h1 className="text-4xl font-black tracking-tight text-slate-950 md:text-5xl dark:text-white">
+            <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-5xl dark:text-white">
               Candidatos
             </h1>
 
