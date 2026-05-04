@@ -32,8 +32,21 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 const DEMO_CREDS = {
-  email: 'admin@demo.edu.pe',
-  password: 'password',
+  admin: {
+    label: 'Admin',
+    email: 'admin@demo.edu.pe',
+    password: 'password',
+  },
+  empresa: {
+    label: 'Empresa',
+    email: 'empresa@demo.edu.pe',
+    password: 'password',
+  },
+  egresado: {
+    label: 'Egresado',
+    email: 'egresado@demo.edu.pe',
+    password: 'password',
+  },
 } as const;
 
 const STATS = [
@@ -178,15 +191,17 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const fillDemo = () => {
+  const fillDemo = (role: keyof typeof DEMO_CREDS) => {
     setError('');
 
-    setValue('email', DEMO_CREDS.email, {
+    const creds = DEMO_CREDS[role];
+
+    setValue('email', creds.email, {
       shouldValidate: true,
       shouldDirty: true,
     });
 
-    setValue('password', DEMO_CREDS.password, {
+    setValue('password', creds.password, {
       shouldValidate: true,
       shouldDirty: true,
     });
@@ -595,84 +610,6 @@ export default function LoginPage() {
           transition: color 0.3s;
         }
 
-        .demo-label {
-          font-size: 10px;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-          color: var(--text-muted);
-          margin-bottom: 10px;
-          transition: color 0.3s;
-        }
-
-        .demo-credentials-card {
-          background: var(--bg-demo);
-          border: 1px solid var(--border);
-          border-radius: 18px;
-          padding: 14px;
-          margin-bottom: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          backdrop-filter: blur(8px);
-          transition: all 0.25s ease;
-        }
-
-        .demo-credentials-card:hover {
-          border-color: var(--demo-hover-border);
-          background: var(--demo-hover-bg);
-        }
-
-        .demo-credential-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          padding: 10px 12px;
-          border-radius: 12px;
-          background: var(--bg-input);
-          border: 1px solid var(--border);
-        }
-
-        .demo-credential-row span {
-          font-size: 12px;
-          color: var(--text-muted);
-          font-weight: 500;
-        }
-
-        .demo-credential-row strong {
-          font-size: 13px;
-          color: var(--text-primary);
-          font-weight: 700;
-          word-break: break-all;
-        }
-
-        .demo-main-btn {
-          width: 100%;
-          margin-top: 4px;
-          padding: 12px;
-          border-radius: 14px;
-          border: 1px solid var(--demo-hover-border);
-          background: var(--demo-hover-bg);
-          color: var(--demo-hover-text);
-          font-family: 'DM Sans', sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          transition: all 0.25s ease;
-        }
-
-        .demo-main-btn:hover {
-          transform: translateY(-2px);
-          background: var(--btn-grad);
-          color: #ffffff;
-          box-shadow: 0 8px 24px var(--shadow-btn);
-        }
-
         .divider {
           display: flex;
           align-items: center;
@@ -871,7 +808,7 @@ export default function LoginPage() {
         }
 
         .form-footer {
-          margin-top: 22px;
+          margin-top: 20px;
           text-align: center;
           font-size: 13px;
           color: var(--text-muted);
@@ -887,6 +824,77 @@ export default function LoginPage() {
 
         .form-footer a:hover {
           text-decoration: underline;
+        }
+
+        .compact-demo-box {
+          margin-top: 18px;
+          padding: 12px;
+          border-radius: 14px;
+          background: var(--bg-demo);
+          border: 1px solid var(--border);
+        }
+
+        .compact-demo-title {
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-bottom: 8px;
+        }
+
+        .compact-demo-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .compact-demo-item {
+          width: 100%;
+          border: 1px solid var(--border);
+          background: var(--bg-input);
+          border-radius: 10px;
+          padding: 8px 10px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .compact-demo-item:hover {
+          border-color: var(--demo-hover-border);
+          background: var(--demo-hover-bg);
+          transform: translateY(-1px);
+        }
+
+        .compact-demo-role {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-primary);
+          white-space: nowrap;
+        }
+
+        .compact-demo-email {
+          font-size: 11px;
+          color: var(--text-muted);
+          font-family: monospace;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .compact-demo-password {
+          margin-top: 8px;
+          font-size: 11px;
+          color: var(--text-muted);
+          text-align: center;
+        }
+
+        .compact-demo-password strong {
+          color: var(--accent);
+          font-weight: 700;
         }
 
         @media (max-width: 860px) {
@@ -946,10 +954,15 @@ export default function LoginPage() {
             font-size: 30px;
           }
 
-          .demo-credential-row {
+          .compact-demo-item {
             align-items: flex-start;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
+          }
+
+          .compact-demo-email {
+            white-space: normal;
+            word-break: break-all;
           }
         }
       `}</style>
@@ -1028,28 +1041,9 @@ export default function LoginPage() {
             <h2 className="form-title">Bienvenido de vuelta</h2>
             <p className="form-sub">Ingresa tus credenciales para continuar</p>
 
-            <p className="demo-label">Credenciales de prueba</p>
-
-            <div className="demo-credentials-card">
-              <div className="demo-credential-row">
-                <span>Usuario</span>
-                <strong>admin@demo.edu.pe</strong>
-              </div>
-
-              <div className="demo-credential-row">
-                <span>Contraseña</span>
-                <strong>password</strong>
-              </div>
-
-              <button type="button" className="demo-main-btn" onClick={fillDemo}>
-                <ShieldCheck size={15} />
-                Usar credenciales demo
-              </button>
-            </div>
-
             <div className="divider">
               <div className="divider-line" />
-              <span className="divider-text">o ingresa manualmente</span>
+              <span className="divider-text">ingresa manualmente</span>
               <div className="divider-line" />
             </div>
 
@@ -1072,7 +1066,7 @@ export default function LoginPage() {
                   <input
                     id="email"
                     type="email"
-                    placeholder="admin@demo.edu.pe"
+                    placeholder="usuario@demo.edu.pe"
                     autoComplete="off"
                     className={`field-input${errors.email ? ' has-error' : ''}`}
                     {...register('email')}
@@ -1130,6 +1124,28 @@ export default function LoginPage() {
             <p className="form-footer">
               ¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a>
             </p>
+
+            <div className="compact-demo-box">
+              <p className="compact-demo-title">Credenciales de prueba</p>
+
+              <div className="compact-demo-list">
+                {Object.entries(DEMO_CREDS).map(([role, creds]) => (
+                  <button
+                    key={role}
+                    type="button"
+                    className="compact-demo-item"
+                    onClick={() => fillDemo(role as keyof typeof DEMO_CREDS)}
+                  >
+                    <span className="compact-demo-role">{creds.label}</span>
+                    <span className="compact-demo-email">{creds.email}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="compact-demo-password">
+                Contraseña para todos: <strong>password</strong>
+              </p>
+            </div>
           </div>
         </div>
       </div>
