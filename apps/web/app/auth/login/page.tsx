@@ -39,13 +39,13 @@ const DEMO_CREDS = {
   },
   empresa: {
     label: 'Empresa',
-    email: 'empresa@demo.edu.pe',
-    password: 'password',
+    email: 'empresa@demo.pe',
+    password: 'Empresa123*',
   },
   egresado: {
     label: 'Egresado',
-    email: 'egresado@demo.edu.pe',
-    password: 'password',
+    email: 'egresado@demo.pe',
+    password: 'Egresado123*',
   },
 } as const;
 
@@ -855,12 +855,13 @@ export default function LoginPage() {
           background: var(--bg-input);
           border-radius: 10px;
           padding: 8px 10px;
-          display: flex;
+          display: grid;
+          grid-template-columns: 72px 1fr;
           align-items: center;
-          justify-content: space-between;
           gap: 10px;
           cursor: pointer;
           transition: all 0.2s ease;
+          text-align: left;
         }
 
         .compact-demo-item:hover {
@@ -876,7 +877,15 @@ export default function LoginPage() {
           white-space: nowrap;
         }
 
-        .compact-demo-email {
+        .compact-demo-data {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+        }
+
+        .compact-demo-email,
+        .compact-demo-pass {
           font-size: 11px;
           color: var(--text-muted);
           font-family: monospace;
@@ -885,14 +894,7 @@ export default function LoginPage() {
           white-space: nowrap;
         }
 
-        .compact-demo-password {
-          margin-top: 8px;
-          font-size: 11px;
-          color: var(--text-muted);
-          text-align: center;
-        }
-
-        .compact-demo-password strong {
+        .compact-demo-pass strong {
           color: var(--accent);
           font-weight: 700;
         }
@@ -955,12 +957,12 @@ export default function LoginPage() {
           }
 
           .compact-demo-item {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 2px;
+            grid-template-columns: 1fr;
+            gap: 4px;
           }
 
-          .compact-demo-email {
+          .compact-demo-email,
+          .compact-demo-pass {
             white-space: normal;
             word-break: break-all;
           }
@@ -1087,7 +1089,7 @@ export default function LoginPage() {
                   <input
                     id="password"
                     type={showPass ? 'text' : 'password'}
-                    placeholder="password"
+                    placeholder="Contraseña"
                     autoComplete="new-password"
                     className={`field-input${errors.password ? ' has-error' : ''}`}
                     {...register('password')}
@@ -1137,14 +1139,16 @@ export default function LoginPage() {
                     onClick={() => fillDemo(role as keyof typeof DEMO_CREDS)}
                   >
                     <span className="compact-demo-role">{creds.label}</span>
-                    <span className="compact-demo-email">{creds.email}</span>
+
+                    <span className="compact-demo-data">
+                      <span className="compact-demo-email">{creds.email}</span>
+                      <span className="compact-demo-pass">
+                        Clave: <strong>{creds.password}</strong>
+                      </span>
+                    </span>
                   </button>
                 ))}
               </div>
-
-              <p className="compact-demo-password">
-                Contraseña para todos: <strong>password</strong>
-              </p>
             </div>
           </div>
         </div>
