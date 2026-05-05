@@ -300,7 +300,11 @@ function EgresadoDetailPageContent() {
                 disabled={saving}
                 className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-black text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </>
@@ -321,7 +325,11 @@ function EgresadoDetailPageContent() {
                 disabled={deleting}
                 className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-black text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {deleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
                 {deleting ? 'Eliminando...' : 'Eliminar'}
               </button>
             </>
@@ -330,10 +338,13 @@ function EgresadoDetailPageContent() {
       </div>
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div className="relative h-36 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
+        <div className="relative h-28 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.35),transparent_35%)]" />
+          <div className="absolute right-8 top-6 h-20 w-20 rounded-full bg-blue-400/20 blur-2xl" />
+        </div>
 
         <div className="px-6 pb-7 sm:px-8">
-          <div className="-mt-14 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="-mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
               <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-3xl font-black text-blue-700 ring-4 ring-white shadow-lg dark:bg-slate-800 dark:text-blue-300 dark:ring-slate-900">
                 {getInitials(egresado.nombre, egresado.apellido)}
@@ -345,7 +356,8 @@ function EgresadoDetailPageContent() {
                 </h1>
 
                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  {egresado.carrera || 'Sin carrera'} · Cohorte {egresado.anioEgreso || '—'}
+                  {egresado.carrera || 'Sin carrera'} · Cohorte{' '}
+                  {egresado.anioEgreso || '—'}
                 </p>
               </div>
             </div>
@@ -464,33 +476,54 @@ function EgresadoDetailPageContent() {
             </p>
 
             {egresado.postulaciones?.length > 0 ? (
-              egresado.postulaciones.map((postulacion: any, index: number) => (
-                <div
-                  key={postulacion.id || index}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70"
-                >
-                  <p className="text-sm font-black text-slate-900 dark:text-white">
-                    {postulacion.oferta?.empresa?.nombre ||
-                      postulacion.ofertaLaboral?.empresa?.nombre ||
-                      postulacion.empresa?.nombre ||
-                      'Empresa no registrada'}
-                  </p>
+              egresado.postulaciones.map((postulacion: any, index: number) => {
+                const oferta = postulacion.oferta || postulacion.ofertaLaboral || {};
+                const empresa = oferta.empresa || postulacion.empresa || {};
 
-                  <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {postulacion.oferta?.titulo ||
-                      postulacion.ofertaLaboral?.titulo ||
-                      postulacion.titulo ||
-                      'Oferta laboral no registrada'}
-                  </p>
+                const nombreEmpresa =
+                  empresa.nombre ||
+                  empresa.razonSocial ||
+                  empresa.nombreComercial ||
+                  empresa.user?.email ||
+                  oferta.empresaNombre ||
+                  oferta.nombreEmpresa ||
+                  'Empresa no registrada';
 
-                  <span className="mt-2 inline-flex rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
-                    {postulacion.estado || 'Postulado'}
-                  </span>
-                </div>
-              ))
+                const tituloOferta =
+                  oferta.titulo ||
+                  oferta.nombre ||
+                  oferta.cargo ||
+                  postulacion.titulo ||
+                  'Oferta laboral no registrada';
+
+                return (
+                  <div
+                    key={postulacion.id || index}
+                    className="rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-blue-50/70 dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10"
+                  >
+                    <p className="text-sm font-black text-slate-900 dark:text-white">
+                      {nombreEmpresa}
+                    </p>
+
+                    <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {tituloOferta}
+                    </p>
+
+                    {oferta.ubicacion && (
+                      <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">
+                        Ubicación: {oferta.ubicacion}
+                      </p>
+                    )}
+
+                    <span className="mt-2 inline-flex rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black uppercase text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
+                      {postulacion.estado || 'POSTULADO'}
+                    </span>
+                  </div>
+                );
+              })
             ) : (
               <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500">
-                Solo se está mostrando el conteo. Falta que el backend envíe el detalle de empresas postuladas.
+                Este egresado aún no registra postulaciones.
               </p>
             )}
           </div>
