@@ -47,18 +47,14 @@ const emptyForm: FormState = {
 
 function toInputDate(value?: string | Date | null) {
   if (!value) return '';
-
   const date = new Date(value);
-
   if (Number.isNaN(date.getTime())) return '';
-
   return date.toISOString().slice(0, 10);
 }
 
 function getInitials(nombre?: string, apellido?: string) {
   const first = nombre?.trim()?.charAt(0) ?? '';
   const second = apellido?.trim()?.charAt(0) ?? '';
-
   return `${first}${second}`.toUpperCase() || 'EG';
 }
 
@@ -304,11 +300,7 @@ function EgresadoDetailPageContent() {
                 disabled={saving}
                 className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-black text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </>
@@ -329,11 +321,7 @@ function EgresadoDetailPageContent() {
                 disabled={deleting}
                 className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-black text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {deleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
+                {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 {deleting ? 'Eliminando...' : 'Eliminar'}
               </button>
             </>
@@ -357,8 +345,7 @@ function EgresadoDetailPageContent() {
                 </h1>
 
                 <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  {egresado.carrera || 'Sin carrera'} · Cohorte{' '}
-                  {egresado.anioEgreso || '—'}
+                  {egresado.carrera || 'Sin carrera'} · Cohorte {egresado.anioEgreso || '—'}
                 </p>
               </div>
             </div>
@@ -383,63 +370,17 @@ function EgresadoDetailPageContent() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field
-                  label="Correo"
-                  type="email"
-                  value={form.email}
-                  onChange={(value) => updateForm('email', value)}
-                />
-
-                <Field
-                  label="DNI"
-                  value={form.dni}
-                  onChange={(value) => updateForm('dni', value)}
-                />
-
-                <Field
-                  label="Nombre"
-                  value={form.nombre}
-                  onChange={(value) => updateForm('nombre', value)}
-                />
-
-                <Field
-                  label="Apellido"
-                  value={form.apellido}
-                  onChange={(value) => updateForm('apellido', value)}
-                />
-
-                <Field
-                  label="Teléfono"
-                  value={form.telefono}
-                  onChange={(value) => updateForm('telefono', value)}
-                />
-
-                <Field
-                  label="Fecha de nacimiento"
-                  type="date"
-                  value={form.fechaNacimiento}
-                  onChange={(value) => updateForm('fechaNacimiento', value)}
-                />
-
-                <Field
-                  label="Carrera"
-                  value={form.carrera}
-                  onChange={(value) => updateForm('carrera', value)}
-                />
-
-                <Field
-                  label="Año de egreso"
-                  type="number"
-                  value={form.anioEgreso}
-                  onChange={(value) => updateForm('anioEgreso', value)}
-                />
+                <Field label="Correo" type="email" value={form.email} onChange={(value) => updateForm('email', value)} />
+                <Field label="DNI" value={form.dni} onChange={(value) => updateForm('dni', value)} />
+                <Field label="Nombre" value={form.nombre} onChange={(value) => updateForm('nombre', value)} />
+                <Field label="Apellido" value={form.apellido} onChange={(value) => updateForm('apellido', value)} />
+                <Field label="Teléfono" value={form.telefono} onChange={(value) => updateForm('telefono', value)} />
+                <Field label="Fecha de nacimiento" type="date" value={form.fechaNacimiento} onChange={(value) => updateForm('fechaNacimiento', value)} />
+                <Field label="Carrera" value={form.carrera} onChange={(value) => updateForm('carrera', value)} />
+                <Field label="Año de egreso" type="number" value={form.anioEgreso} onChange={(value) => updateForm('anioEgreso', value)} />
 
                 <div className="md:col-span-2">
-                  <Field
-                    label="Dirección"
-                    value={form.direccion}
-                    onChange={(value) => updateForm('direccion', value)}
-                  />
+                  <Field label="Dirección" value={form.direccion} onChange={(value) => updateForm('direccion', value)} />
                 </div>
               </div>
             </div>
@@ -512,11 +453,46 @@ function EgresadoDetailPageContent() {
               </p>
 
               <p className="text-2xl font-black text-slate-950 dark:text-white">
-                {egresado._count?.postulaciones ||
-                  egresado.postulaciones?.length ||
-                  0}
+                {egresado._count?.postulaciones || egresado.postulaciones?.length || 0}
               </p>
             </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              Empresas postuladas
+            </p>
+
+            {egresado.postulaciones?.length > 0 ? (
+              egresado.postulaciones.map((postulacion: any, index: number) => (
+                <div
+                  key={postulacion.id || index}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70"
+                >
+                  <p className="text-sm font-black text-slate-900 dark:text-white">
+                    {postulacion.oferta?.empresa?.nombre ||
+                      postulacion.ofertaLaboral?.empresa?.nombre ||
+                      postulacion.empresa?.nombre ||
+                      'Empresa no registrada'}
+                  </p>
+
+                  <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {postulacion.oferta?.titulo ||
+                      postulacion.ofertaLaboral?.titulo ||
+                      postulacion.titulo ||
+                      'Oferta laboral no registrada'}
+                  </p>
+
+                  <span className="mt-2 inline-flex rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
+                    {postulacion.estado || 'Postulado'}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-500">
+                Solo se está mostrando el conteo. Falta que el backend envíe el detalle de empresas postuladas.
+              </p>
+            )}
           </div>
         </div>
 
