@@ -68,8 +68,10 @@ function InfoItem({
   value?: string | number | null;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/70">
-      <Icon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+    <div className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 transition hover:border-blue-200 hover:bg-blue-50/70 dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 transition group-hover:text-blue-600 dark:bg-slate-900/80 dark:text-slate-500 dark:ring-slate-700 dark:group-hover:text-blue-300">
+        <Icon className="h-5 w-5" />
+      </div>
 
       <div className="min-w-0">
         <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
@@ -338,33 +340,36 @@ function EgresadoDetailPageContent() {
       </div>
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div className="relative h-28 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.35),transparent_35%)]" />
-          <div className="absolute right-8 top-6 h-20 w-20 rounded-full bg-blue-400/20 blur-2xl" />
-        </div>
+        <div className="relative overflow-hidden px-6 pt-7 sm:px-8">
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950" />
+          <div className="absolute left-8 top-4 h-28 w-28 rounded-full bg-blue-400/20 blur-3xl" />
+          <div className="absolute right-12 top-2 h-32 w-32 rounded-full bg-indigo-400/20 blur-3xl" />
 
-        <div className="px-6 pb-7 sm:px-8">
-          <div className="-mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex items-end gap-4">
-              <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-3xl font-black text-blue-700 ring-4 ring-white shadow-lg dark:bg-slate-800 dark:text-blue-300 dark:ring-slate-900">
-                {getInitials(egresado.nombre, egresado.apellido)}
+          <div className="relative mt-12 flex flex-col gap-5 sm:flex-row sm:items-end">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-white text-3xl font-black text-blue-700 shadow-xl ring-4 ring-white dark:bg-slate-800 dark:text-blue-300 dark:ring-slate-900">
+              {getInitials(egresado.nombre, egresado.apellido)}
+            </div>
+
+            <div className="pb-2">
+              <div className="mb-2 inline-flex rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
+                Perfil de egresado
               </div>
 
-              <div className="pb-1">
-                <h1 className="text-2xl font-black text-slate-950 dark:text-white">
-                  {egresado.nombre} {egresado.apellido}
-                </h1>
+              <h1 className="text-2xl font-black text-slate-950 dark:text-white">
+                {egresado.nombre} {egresado.apellido}
+              </h1>
 
-                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  {egresado.carrera || 'Sin carrera'} · Cohorte{' '}
-                  {egresado.anioEgreso || '—'}
-                </p>
-              </div>
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                {egresado.carrera || 'Sin carrera'} · Cohorte{' '}
+                {egresado.anioEgreso || '—'}
+              </p>
             </div>
           </div>
+        </div>
 
+        <div className="px-6 pb-7 pt-6 sm:px-8">
           {editing ? (
-            <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950/60">
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950/60">
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-500/10">
                   <Edit className="h-5 w-5 text-blue-700 dark:text-blue-300" />
@@ -397,7 +402,7 @@ function EgresadoDetailPageContent() {
               </div>
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <InfoItem icon={Mail} label="Correo" value={egresado.user?.email} />
               <InfoItem icon={Phone} label="Teléfono" value={egresado.telefono} />
               <InfoItem icon={BookOpen} label="DNI" value={egresado.dni} />
