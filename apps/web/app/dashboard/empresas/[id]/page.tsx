@@ -98,9 +98,9 @@ function TopButton({
     neutral:
       'border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]',
     primary:
-      'border-blue-600 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600',
+      'border-blue-600 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500',
     danger:
-      'border-rose-600 bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 text-white hover:from-rose-500 hover:via-red-500 hover:to-rose-600',
+      'border-rose-600 bg-gradient-to-r from-rose-600 to-red-600 text-white hover:from-rose-500 hover:to-red-500',
   };
 
   return (
@@ -112,6 +112,36 @@ function TopButton({
     >
       {children}
     </button>
+  );
+}
+
+function StatusBadge({
+  icon: Icon,
+  children,
+  tone = 'blue',
+}: {
+  icon: any;
+  children: React.ReactNode;
+  tone?: 'blue' | 'emerald' | 'indigo' | 'slate';
+}) {
+  const styles = {
+    blue:
+      'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300',
+    emerald:
+      'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    indigo:
+      'border-indigo-500/20 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300',
+    slate:
+      'border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]',
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-black uppercase tracking-widest shadow-sm ${styles[tone]}`}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {children}
+    </span>
   );
 }
 
@@ -131,7 +161,6 @@ function InfoItem({
   return (
     <div className="group relative min-w-0 overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
       <div className="absolute -right-12 -top-12 h-28 w-28 rounded-full bg-blue-500/10 opacity-0 blur-2xl transition duration-500 group-hover:opacity-100" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent opacity-0 transition group-hover:opacity-100" />
 
       <div className="relative flex min-w-0 items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] ring-1 ring-[var(--color-border)] transition duration-300 group-hover:scale-105 group-hover:text-blue-700 dark:group-hover:text-blue-300">
@@ -188,7 +217,7 @@ function Field({
         value={value}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] outline-none transition duration-300 placeholder:text-[var(--color-text-muted)] hover:border-blue-400/60 focus:border-blue-500 focus:bg-[var(--color-bg-surface)] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10"
+        className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] outline-none transition duration-300 placeholder:text-[var(--color-text-muted)] hover:border-blue-400/60 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10"
       />
     </label>
   );
@@ -216,7 +245,7 @@ function TextAreaField({
         rows={5}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full resize-none rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-sm font-semibold leading-6 text-[var(--color-text-primary)] outline-none transition duration-300 placeholder:text-[var(--color-text-muted)] hover:border-blue-400/60 focus:border-blue-500 focus:bg-[var(--color-bg-surface)] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10"
+        className="w-full resize-none rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-sm font-semibold leading-6 text-[var(--color-text-primary)] outline-none transition duration-300 placeholder:text-[var(--color-text-muted)] hover:border-blue-400/60 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10"
       />
     </label>
   );
@@ -289,22 +318,22 @@ function MiniStatCard({
   }[tone];
 
   return (
-    <div className="group relative min-w-0 overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
+    <div className="group relative min-w-0 overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-blue-500/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
 
-      <div className="relative flex min-w-0 items-center gap-3">
+      <div className="relative flex items-center gap-3">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 transition group-hover:scale-105 ${toneClass}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${toneClass}`}
         >
           <Icon className="h-5 w-5" />
         </div>
 
         <div className="min-w-0">
-          <p className="truncate text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+          <p className="truncate text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
             {label}
           </p>
 
-          <p className="mt-1 truncate text-lg font-black text-[var(--color-text-primary)]">
+          <p className="mt-1 truncate text-xl font-black text-[var(--color-text-primary)]">
             {value}
           </p>
         </div>
@@ -504,7 +533,7 @@ function EmpresaDetailPageContent() {
           <div className="h-11 w-48 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
         </div>
 
-        <div className="relative h-[420px] animate-pulse rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]" />
+        <div className="relative h-[360px] animate-pulse rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]" />
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
@@ -595,113 +624,107 @@ function EmpresaDetailPageContent() {
         </div>
       </div>
 
-      <section className="relative max-w-full overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-400/10" />
-        <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-400/10" />
+      <section className="relative max-w-full overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 shadow-sm sm:p-7">
+        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] [background-size:22px_22px]" />
 
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-800 px-5 pb-28 pt-7 sm:px-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_34%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)]" />
-          <div className="absolute -bottom-24 right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+        <div className="relative overflow-hidden rounded-[1.75rem] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-sm sm:p-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent dark:from-blue-500/15 dark:via-indigo-500/10 dark:to-slate-950/30" />
+          <div className="absolute -right-20 top-0 h-60 w-60 rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="absolute -bottom-24 left-1/2 h-60 w-60 rounded-full bg-indigo-500/10 blur-3xl" />
 
-          <div className="relative flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white/90 shadow-sm backdrop-blur">
-              <Building2 className="h-4 w-4" />
+          <div className="relative mb-6 flex flex-wrap gap-2">
+            <StatusBadge icon={Building2} tone="slate">
               Perfil empresarial
-            </span>
+            </StatusBadge>
 
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-emerald-100 shadow-sm backdrop-blur">
-              <ShieldCheck className="h-4 w-4" />
+            <StatusBadge icon={ShieldCheck} tone="emerald">
               Sincronizado
-            </span>
+            </StatusBadge>
+          </div>
+
+          <div className="relative grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-center">
+            <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="relative shrink-0">
+                <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-4xl font-black text-blue-700 shadow-sm ring-1 ring-blue-500/10 dark:text-blue-300 sm:h-28 sm:w-28">
+                  {empresa.logoUrl ? (
+                    <img
+                      src={empresa.logoUrl}
+                      alt={empresa.nombreComercial || 'Logo empresa'}
+                      className="h-full w-full rounded-[2rem] object-cover"
+                    />
+                  ) : (
+                    getInitial(empresa.nombreComercial)
+                  )}
+                </div>
+
+                <div className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-2xl bg-emerald-500 text-white ring-4 ring-[var(--color-bg-subtle)]">
+                  <ShieldCheck className="h-4 w-4" />
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <StatusBadge icon={Sparkles} tone="blue">
+                    Empresa registrada
+                  </StatusBadge>
+
+                  <StatusBadge icon={Landmark} tone="indigo">
+                    RUC {empresa.ruc || '—'}
+                  </StatusBadge>
+                </div>
+
+                <h1 className="max-w-full truncate text-3xl font-display font-black tracking-tight text-[var(--color-text-primary)] sm:text-4xl">
+                  {empresa.nombreComercial || 'Empresa sin nombre'}
+                </h1>
+
+                <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--color-text-secondary)]">
+                  {empresa.razonSocial || 'Sin razón social registrada'}
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] shadow-sm">
+                    <Briefcase className="h-4 w-4 text-[var(--color-text-muted)]" />
+                    {empresa.sector || 'Sin sector'}
+                  </span>
+
+                  <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] shadow-sm">
+                    <MapPin className="h-4 w-4 text-[var(--color-text-muted)]" />
+                    {empresa.ubicacion || 'Sin ubicación'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 xl:grid-cols-1">
+              <MiniStatCard
+                icon={Briefcase}
+                label="Ofertas"
+                value={totalOfertas}
+                tone="blue"
+              />
+
+              <MiniStatCard
+                icon={Activity}
+                label="Activas"
+                value={ofertasActivas}
+                tone="emerald"
+              />
+
+              <MiniStatCard
+                icon={Database}
+                label="Estado"
+                value="Activo"
+                tone="indigo"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="relative px-4 pb-8 sm:px-8">
-          <div className="-mt-20 rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]/95 p-5 shadow-2xl backdrop-blur-xl">
-            <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] xl:items-center">
-              <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
-                <div className="relative shrink-0">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] border border-[var(--color-border)] bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-transparent text-4xl font-black text-blue-700 shadow-sm ring-1 ring-blue-500/10 dark:text-blue-300 sm:h-28 sm:w-28">
-                    {empresa.logoUrl ? (
-                      <img
-                        src={empresa.logoUrl}
-                        alt={empresa.nombreComercial || 'Logo empresa'}
-                        className="h-full w-full rounded-[2rem] object-cover"
-                      />
-                    ) : (
-                      getInitial(empresa.nombreComercial)
-                    )}
-                  </div>
-
-                  <div className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-2xl bg-emerald-500 text-white ring-4 ring-[var(--color-bg-surface)]">
-                    <ShieldCheck className="h-4 w-4" />
-                  </div>
-                </div>
-
-                <div className="min-w-0">
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-300">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Empresa registrada
-                    </span>
-
-                    <span className="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-indigo-700 ring-1 ring-indigo-500/20 dark:text-indigo-300">
-                      <Landmark className="h-3.5 w-3.5" />
-                      RUC {empresa.ruc || '—'}
-                    </span>
-                  </div>
-
-                  <h1 className="max-w-full truncate text-3xl font-display font-black tracking-tight text-[var(--color-text-primary)] sm:text-4xl">
-                    {empresa.nombreComercial || 'Empresa sin nombre'}
-                  </h1>
-
-                  <p className="mt-2 max-w-2xl overflow-hidden text-ellipsis text-sm font-semibold leading-6 text-[var(--color-text-secondary)]">
-                    {empresa.razonSocial || 'Sin razón social registrada'}
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] shadow-sm">
-                      <Briefcase className="h-4 w-4 text-[var(--color-text-muted)]" />
-                      {empresa.sector || 'Sin sector'}
-                    </span>
-
-                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] shadow-sm">
-                      <MapPin className="h-4 w-4 text-[var(--color-text-muted)]" />
-                      {empresa.ubicacion || 'Sin ubicación'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                <MiniStatCard
-                  icon={Briefcase}
-                  label="Ofertas"
-                  value={totalOfertas}
-                  tone="blue"
-                />
-
-                <MiniStatCard
-                  icon={Activity}
-                  label="Activas"
-                  value={ofertasActivas}
-                  tone="emerald"
-                />
-
-                <MiniStatCard
-                  icon={Database}
-                  label="Estado"
-                  value="Activo"
-                  tone="indigo"
-                />
-              </div>
-            </div>
-          </div>
-
+        <div className="relative mt-7">
           {editing ? (
-            <div className="mt-8 rounded-[2rem] border border-blue-500/20 bg-blue-500/5 p-5 shadow-sm">
+            <div className="rounded-[2rem] border border-blue-500/20 bg-blue-500/5 p-5 shadow-sm">
               <SectionHeader
                 icon={Edit}
                 eyebrow="Modo edición"
@@ -780,23 +803,21 @@ function EmpresaDetailPageContent() {
             </div>
           ) : (
             <>
-              <div className="mt-8">
-                <SectionHeader
-                  icon={FileText}
-                  eyebrow="Información empresarial"
-                  title="Datos de la empresa"
-                  description="Información principal registrada en el sistema."
-                  tone="blue"
-                />
+              <SectionHeader
+                icon={FileText}
+                eyebrow="Información empresarial"
+                title="Datos de la empresa"
+                description="Información principal registrada en el sistema."
+                tone="blue"
+              />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  <InfoItem icon={Mail} label="Correo" value={empresa.user?.email} />
-                  <InfoItem icon={Building2} label="RUC" value={empresa.ruc} />
-                  <InfoItem icon={Briefcase} label="Sector" value={empresa.sector} />
-                  <InfoItem icon={MapPin} label="Ubicación" value={empresa.ubicacion} />
-                  <InfoItem icon={Globe2} label="Sitio web" value={empresa.sitioWeb} link />
-                  <InfoItem icon={FileText} label="Razón social" value={empresa.razonSocial} />
-                </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <InfoItem icon={Mail} label="Correo" value={empresa.user?.email} />
+                <InfoItem icon={Building2} label="RUC" value={empresa.ruc} />
+                <InfoItem icon={Briefcase} label="Sector" value={empresa.sector} />
+                <InfoItem icon={MapPin} label="Ubicación" value={empresa.ubicacion} />
+                <InfoItem icon={Globe2} label="Sitio web" value={empresa.sitioWeb} link />
+                <InfoItem icon={FileText} label="Razón social" value={empresa.razonSocial} />
               </div>
 
               {empresa.descripcion && (
@@ -904,7 +925,7 @@ export default function EmpresaDetailPage() {
             <div className="h-11 w-48 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
           </div>
 
-          <div className="relative h-[420px] animate-pulse rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]" />
+          <div className="relative h-[360px] animate-pulse rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]" />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
