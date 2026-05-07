@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { ofertasApi, postulacionesApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
@@ -16,6 +15,8 @@ import {
   MapPin,
   Sparkles,
   Users,
+  CalendarDays,
+  Timer,
 } from 'lucide-react';
 
 const modalidadColors: Record<string, { bg: string; text: string; ring: string }> = {
@@ -53,22 +54,23 @@ function DetailItem({
   icon: Icon,
   label,
   value,
+  highlight = false,
 }: {
   icon: any;
   label: string;
   value: string | number;
+  highlight?: boolean;
 }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-sm">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-bg-subtle)]">
         <Icon className="h-5 w-5 text-[var(--color-text-muted)]" />
       </div>
-
       <div>
         <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
           {label}
         </p>
-        <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
+        <p className={`mt-1 text-sm font-semibold ${highlight ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--color-text-primary)]'}`}>
           {value}
         </p>
       </div>
@@ -88,7 +90,6 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
     try {
       const data = await ofertasApi.get(params.id);
       setOferta(data);
-
       if (user?.role === 'EGRESADO') {
         const posts = await postulacionesApi.misPostulaciones();
         const hasPostulado = posts.some((p: any) => p.ofertaId === params.id);
@@ -116,11 +117,24 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
     }
   };
 
+  // === FUNCIONES DE FECHAS ===
+  const formatDate = (dateStr?: string) => 
+    dateStr 
+      ? new Date(dateStr).toLocaleDateString('es-PE', { 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric' 
+        }) 
+      : '—';
+
+  const daysLeft = oferta?.fechaFin 
+    ? Math.ceil((new Date(oferta.fechaFin).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) 
+    : null;
+
   if (loading) {
     return (
       <div className="space-y-7 animate-pulse">
         <div className="h-32 rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm" />
-
         <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 shadow-sm">
           <div className="mb-6 h-8 w-2/3 rounded-xl bg-[var(--color-bg-subtle)]" />
           <div className="mb-4 h-4 w-1/2 rounded-lg bg-[var(--color-bg-subtle)]" />
@@ -137,11 +151,9 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
             <Briefcase className="h-8 w-8 text-[var(--color-text-muted)]" />
           </div>
-
           <h2 className="mt-5 text-xl font-display font-extrabold text-[var(--color-text-primary)]">
             Oferta no encontrada
           </h2>
-
           <Link
             href="/dashboard/ofertas"
             className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-400/20 bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-xl"
@@ -154,26 +166,25 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
     );
   }
 
-  const mColors =
-    modalidadColors[oferta.modalidad] || {
-      bg: 'bg-[var(--color-bg-subtle)]',
-      text: 'text-[var(--color-text-secondary)]',
-      ring: 'ring-[var(--color-border)]',
-    };
+  const mColors = modalidadColors[oferta.modalidad] || {
+    bg: 'bg-[var(--color-bg-subtle)]',
+    text: 'text-[var(--color-text-secondary)]',
+    ring: 'ring-[var(--color-border)]',
+  };
 
-  const eColors =
-    estadoColors[oferta.estado] || {
-      bg: 'bg-[var(--color-bg-subtle)]',
-      text: 'text-[var(--color-text-secondary)]',
-      ring: 'ring-[var(--color-border)]',
-    };
+  const eColors = estadoColors[oferta.estado] || {
+    bg: 'bg-[var(--color-bg-subtle)]',
+    text: 'text-[var(--color-text-secondary)]',
+    ring: 'ring-[var(--color-border)]',
+  };
 
   return (
     <main className="space-y-7 animate-fadeIn">
+      {/* HERO - SIN CAMBIOS */}
       <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 p-8 text-slate-950 shadow-xl dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:text-white">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl dark:bg-white/10" />
         <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl dark:bg-white/10" />
-
+        
         <div className="relative flex flex-col gap-6">
           <Link
             href="/dashboard/ofertas"
@@ -188,31 +199,22 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl border border-slate-200 bg-white text-2xl font-display font-extrabold text-blue-700 shadow-lg dark:border-white/10 dark:bg-white/10 dark:text-blue-300">
                 {oferta.empresa?.nombreComercial?.[0]}
               </div>
-
               <div>
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-widest text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-white/75">
                   <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                   Detalle de oferta laboral
                 </div>
-
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${eColors.bg} ${eColors.text} ${eColors.ring}`}
-                  >
+                  <span className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${eColors.bg} ${eColors.text} ${eColors.ring}`}>
                     {oferta.estado}
                   </span>
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${mColors.bg} ${mColors.text} ${mColors.ring}`}
-                  >
+                  <span className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${mColors.bg} ${mColors.text} ${mColors.ring}`}>
                     {oferta.modalidad}
                   </span>
                 </div>
-
                 <h1 className="text-4xl font-display font-extrabold tracking-tight text-slate-950 dark:text-white">
                   {oferta.titulo}
                 </h1>
-
                 <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-semibold leading-6 text-slate-600 dark:text-white/70">
                   <Building2 className="h-5 w-5" />
                   {oferta.empresa?.nombreComercial} · {oferta.empresa?.sector}
@@ -260,7 +262,6 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
               <h2 className="mb-4 text-xl font-display font-extrabold tracking-tight text-[var(--color-text-primary)]">
                 Descripción del cargo
               </h2>
-
               <p className="leading-relaxed text-[var(--color-text-secondary)]">
                 {oferta.descripcion}
               </p>
@@ -271,7 +272,6 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
                 <h2 className="mb-4 text-xl font-display font-extrabold tracking-tight text-[var(--color-text-primary)]">
                   Habilidades requeridas
                 </h2>
-
                 <div className="flex flex-wrap gap-2">
                   {oferta.habilidades.map((h: any) => (
                     <span
@@ -291,57 +291,39 @@ export default function OfertaDetallePage({ params }: { params: { id: string } }
             )}
           </div>
 
+          {/* ASIDE CON FECHAS MEJORADAS */}
           <aside className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-8 lg:border-l lg:border-t-0">
             <h2 className="mb-6 text-lg font-display font-extrabold tracking-tight text-[var(--color-text-primary)]">
               Detalles de la oferta
             </h2>
-
             <div className="space-y-4">
-              {oferta.ubicacion && (
-                <DetailItem
-                  icon={MapPin}
-                  label="Ubicación"
-                  value={oferta.ubicacion}
-                />
-              )}
+              {oferta.ubicacion && <DetailItem icon={MapPin} label="Ubicación" value={oferta.ubicacion} />}
+              {oferta.tipoContrato && <DetailItem icon={Briefcase} label="Tipo de contrato" value={oferta.tipoContrato.replace('_', ' ')} />}
 
-              {oferta.tipoContrato && (
-                <DetailItem
-                  icon={Briefcase}
-                  label="Tipo de contrato"
-                  value={oferta.tipoContrato.replace('_', ' ')}
+              {/* FECHAS NUEVAS */}
+              <DetailItem icon={CalendarDays} label="Fecha de inicio" value={formatDate(oferta.fechaInicio)} />
+              <DetailItem 
+                icon={Calendar} 
+                label="Fecha de cierre" 
+                value={formatDate(oferta.fechaFin)} 
+                highlight={daysLeft !== null && daysLeft <= 10}
+              />
+
+              {daysLeft !== null && daysLeft > 0 && (
+                <DetailItem 
+                  icon={Timer} 
+                  label="Tiempo restante" 
+                  value={`${daysLeft} días`} 
+                  highlight={daysLeft <= 7}
                 />
               )}
 
               {(oferta.salarioMin || oferta.salarioMax) && (
-                <DetailItem
-                  icon={DollarSign}
-                  label="Rango salarial"
-                  value={`S/ ${oferta.salarioMin ?? '—'} – ${oferta.salarioMax ?? '—'}`}
-                />
+                <DetailItem icon={DollarSign} label="Rango salarial" value={`S/ ${oferta.salarioMin ?? '—'} – ${oferta.salarioMax ?? '—'}`} />
               )}
-
-              <DetailItem
-                icon={Calendar}
-                label="Publicado"
-                value={new Date(oferta.createdAt).toLocaleDateString('es-PE', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              />
-
-              <DetailItem
-                icon={Users}
-                label="Postulantes"
-                value={`${oferta._count?.postulaciones ?? 0} aplicaciones`}
-              />
-
-              <DetailItem
-                icon={Clock}
-                label="Estado"
-                value={oferta.estado}
-              />
+              <DetailItem icon={Calendar} label="Publicado" value={new Date(oferta.createdAt).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })} />
+              <DetailItem icon={Users} label="Postulantes" value={`${oferta._count?.postulaciones ?? 0} aplicaciones`} />
+              <DetailItem icon={Clock} label="Estado" value={oferta.estado} />
             </div>
           </aside>
         </div>
