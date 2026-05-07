@@ -1,4 +1,5 @@
 // This is your Prisma schema file
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -62,22 +63,24 @@ enum EstadoReporte {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  passwordHash String    @map("password_hash")
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
   role         UserRole
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
   lastLogin    DateTime? @map("last_login")
 
-  egresado       Egresado?
-  empresa        Empresa?
-  administrador  Administrador?
-  notificaciones Notificacion[]
-  reportes       Reporte[]
-  auditoria      AuditoriaLog[]
-  historialCambios HistorialEstadoPostulacion[]
+  egresado          Egresado?
+  empresa           Empresa?
+  administrador     Administrador?
+  notificaciones    Notificacion[]
+  reportes          Reporte[]
+  auditoria         AuditoriaLog[]
+  historialCambios  HistorialEstadoPostulacion[]
 
+  @@index([role])
+  @@index([email])
   @@map("users")
 }
 
@@ -87,7 +90,7 @@ model Egresado {
   nombre             String
   apellido           String
   dni                String   @unique
-  fechaNacimiento    DateTime? @map("fecha_nacimiento")
+  fechaNacimiento    DateTime? @map("fecha_nacimiento") @db.Date
   telefono           String?
   direccion          String?
   carrera            String?
@@ -100,24 +103,26 @@ model Egresado {
   habilidades   EgresadoHabilidad[]
   postulaciones Postulacion[]
 
+  @@index([carrera])
   @@map("egresados")
 }
 
 model Empresa {
-  id             String  @id
-  user           User    @relation(fields: [id], references: [id], onDelete: Cascade)
-  nombreComercial String  @map("nombre_comercial")
-  razonSocial    String  @map("razon_social")
-  ruc            String  @unique
-  sector         String?
-  sitioWeb       String? @map("sitio_web")
-  descripcion    String?
+  id              String   @id
+  user            User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  nombreComercial String   @map("nombre_comercial")
+  razonSocial     String   @map("razon_social")
+  ruc             String   @unique
+  sector          String?
+  sitioWeb        String?  @map("sitio_web")
+  descripcion     String?
   ubicacion       String?
-  logoUrl        String? @map("logo_url")
-  createdAt      DateTime @default(now()) @map("created_at")
+  logoUrl         String?  @map("logo_url")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   ofertas OfertaLaboral[]
 
+  @@index([sector])
   @@map("empresas")
 }
 
@@ -131,8 +136,8 @@ model Administrador {
 }
 
 model Habilidad {
-  id        String        @id @default(uuid())
-  nombre    String        @unique
+  id        String         @id @default(uuid())
+  nombre    String         @unique
   tipo      TipoHabilidad?
   categoria String?
 
@@ -143,135 +148,87 @@ model Habilidad {
 }
 
 model EgresadoHabilidad {
-  egresadoId  String        @map("egresado_id")
-  habilidadId String        @map("habilidad_id")
+  egresadoId  String          @map("egresado_id")
+  habilidadId String          @map("habilidad_id")
   nivel       NivelHabilidad?
-  egresado    Egresado      @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
-  habilidad   Habilidad     @relation(fields: [habilidadId], references: [id], onDelete: Cascade)
+
+  egresado  Egresado  @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
+  habilidad Habilidad @relation(fields: [habilidadId], references: [id], onDelete: Cascade)
 
   @@id([egresadoId, habilidadId])
   @@map("egresados_habilidades")
 }
 
-
 model OfertaLaboral {
-  id               String       @id @default(uuid())
-  empresaId        String       @map("empresa_id")
-  empresa          Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  id               String        @id @default(uuid())
+  empresaId        String        @map("empresa_id")
+  empresa          Empresa       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
   titulo           String
   descripcion      String
+  requisitos       String?
   ubicacion        String?
+
   modalidad        Modalidad?
   tipoContrato     TipoContrato? @map("tipo_contrato")
-  salarioMin       Decimal?     @map("salario_min") @db.Decimal(10, 2)
-  salarioMax       Decimal?     @map("salario_max") @db.Decimal(10, 2)
-  fechaPublicacion DateTime     @default(now()) @map("fecha_publicacion")
-  fechaCierre      DateTime?    @map("fecha_cierre")
-  estado           EstadoOferta @default(ACTIVA)
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  habilidades   OfertaHabilidad[]
-  postulaciones Postulacion[]
-  requisitos String?
+  salarioMin       Decimal?      @map("salario_min") @db.Decimal(10, 2)
+  salarioMax       Decimal?      @map("salario_max") @db.Decimal(10, 2)
+
+  fechaPublicacion DateTime      @default(now()) @map("fecha_publicacion")
+  fechaCierre      DateTime?     @map("fecha_cierre")
+
+  fechaInicio      DateTime      @default(dbgenerated("CURRENT_DATE")) @map("fecha_inicio") @db.Date
+  fechaFin         DateTime      @default(dbgenerated("(CURRENT_DATE + 30)")) @map("fecha_fin") @db.Date
+
+  estado           EstadoOferta  @default(ACTIVA)
+
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  habilidades      OfertaHabilidad[]
+  postulaciones    Postulacion[]
+
+  @@index([empresaId])
+  @@index([estado])
+  @@index([modalidad])
+  @@index([fechaInicio, fechaFin])
   @@map("ofertas_laborales")
 }
+
 model OfertaHabilidad {
-  ofertaId    String        @map("oferta_id")
-  habilidadId String        @map("habilidad_id")
-  requerido   Boolean       @default(true)
-  oferta      OfertaLaboral @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
-  habilidad   Habilidad     @relation(fields: [habilidadId], references: [id], onDelete: Cascade)
+  ofertaId    String  @map("oferta_id")
+  habilidadId String  @map("habilidad_id")
+  requerido   Boolean @default(true)
+
+  oferta    OfertaLaboral @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
+  habilidad Habilidad     @relation(fields: [habilidadId], references: [id], onDelete: Cascade)
 
   @@id([ofertaId, habilidadId])
   @@map("ofertas_habilidades")
 }
 
 model Postulacion {
-  id          String            @id @default(uuid())
-  ofertaId    String            @map("oferta_id")
-  egresadoId  String            @map("egresado_id")
-  estado      EstadoPostulacion @default(POSTULADO)
-  comentario  String?
-  createdAt   DateTime          @default(now()) @map("created_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
+  id         String            @id @default(uuid())
+  ofertaId   String            @map("oferta_id")
+  egresadoId String            @map("egresado_id")
+  estado     EstadoPostulacion @default(POSTULADO)
+  comentario String?
 
-  oferta    OfertaLaboral @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
-  egresado  Egresado      @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
-  historial HistorialEstadoPostulacion[]
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @default(now()) @updatedAt @map("updated_at")
+
+  oferta     OfertaLaboral     @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
+  egresado   Egresado          @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
+  historial  HistorialEstadoPostulacion[]
 
   @@unique([ofertaId, egresadoId])
+  @@index([estado])
+  @@index([ofertaId])
+  @@index([egresadoId])
   @@map("postulaciones")
 }
 
 model HistorialEstadoPostulacion {
-  id             String   @id @default(uuid())
-  postulacionId  String   @map("postulacion_id")
-  estadoAnterior String?  @map("estado_anterior")
-  estadoNuevo    String   @map("estado_nuevo")
-  motivo         String?
-  usuarioCambioId String? @map("usuario_cambio_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  postulacion   Postulacion @relation(fields: [postulacionId], references: [id], onDelete: Cascade)
-  usuarioCambio User?       @relation(fields: [usuarioCambioId], references: [id])
-
-  @@map("historial_estados_postulacion")
-}
-
-model Notificacion {
-  id        String   @id @default(uuid())
-  usuarioId String   @map("usuario_id")
-  tipo      String
-  titulo    String
-  contenido String
-  leida     Boolean  @default(false)
-  metadata  Json?
-  createdAt DateTime @default(now()) @map("created_at")
-
-  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("notificaciones")
-}
-
-model Reporte {
-  id           String        @id @default(uuid())
-  usuarioId    String        @map("usuario_id")
-  tipo         String
-  nombreArchivo String       @map("nombre_archivo")
-  urlArchivo   String?       @map("url_archivo")
-  parametros   Json?
-  estado       EstadoReporte @default(PENDIENTE)
-  createdAt    DateTime      @default(now()) @map("created_at")
-  completedAt  DateTime?     @map("completed_at")
-
-  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("reportes")
-}
-
-model AuditoriaLog {
-  id          String   @id @default(uuid())
-  usuarioId   String?  @map("usuario_id")
-  accion      String
-  entidad     String
-  datosPrevios Json?   @map("datos_previos")
-  datosNuevos  Json?   @map("datos_nuevos")
-  ipAddress   String?  @map("ip_address")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  usuario User? @relation(fields: [usuarioId], references: [id])
-
-  @@map("auditoria_logs")
-}
-
-model MetricaAgregada {
-  id          String   @id @default(uuid())
-  fecha       DateTime
-  tipoMetrica String   @map("tipo_metrica")
-  valores     Json
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@unique([fecha, tipoMetrica])
-  @@map("metricas_agregadas")
-}
+  id              String   @id @default(uuid())
+  postul
