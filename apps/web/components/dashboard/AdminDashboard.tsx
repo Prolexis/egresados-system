@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
@@ -8,7 +9,7 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, ComposedChart, Line
+  Tooltip, Legend, ResponsiveContainer, ComposedChart
 } from 'recharts';
 
 const COLORS = ['#2563EB', '#EF4444', '#7C3AED', '#10B981', '#F59E0B', '#EC4899'];
@@ -130,10 +131,10 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-4">
             {lastUpdated && <p className="text-sm text-[var(--color-text-muted)]">Actualizado: {lastUpdated.toLocaleTimeString('es-PE')}</p>}
-            <button onClick={load} disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)] transition">
+            <button onClick={load} disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Actualizar
             </button>
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl transition">
+            <button className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl">
               <Download className="h-4 w-4" /> Exportar
             </button>
           </div>
@@ -150,17 +151,16 @@ export default function AdminDashboard() {
 
       {/* Gráficos principales */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Evolución mensual - Versión limpia y clara */}
+        {/* Evolución mensual */}
         <div className="lg:col-span-2">
           <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading}>
             <ResponsiveContainer width="100%" height={380}>
               <ComposedChart data={(data?.graficas?.ofertasPorMes || []).map(item => ({ ...item, _label: formatMonthLabel(item.mes) }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
-                <XAxis dataKey="_label" tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="_label" tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} />
+                <YAxis tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ paddingTop: 15 }} />
-
+                <Legend />
                 <Bar dataKey="ofertas" fill="#2563EB" name="Ofertas" radius={[6, 6, 0, 0]} barSize={45} />
                 <Bar dataKey="postulaciones" fill="#EF4444" name="Postulaciones" radius={[6, 6, 0, 0]} barSize={45} />
               </ComposedChart>
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
           </ChartCard>
         </div>
 
-        {/* Pie Chart - Mejorado */}
+        {/* PIE CHART - MEJOR ALINEADO */}
         <ChartCard title="Distribución por carrera" subtitle="Egresados por especialidad" loading={loading}>
           <ResponsiveContainer width="100%" height={380}>
             <PieChart>
@@ -188,28 +188,46 @@ export default function AdminDashboard() {
                 ))}
               </Pie>
 
-              <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="text-5xl font-bold fill-[var(--color-text-primary)] tracking-tighter">
+              {/* Texto centrado */}
+              <text
+                x="50%"
+                y="46%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-5xl font-bold tracking-tighter fill-[var(--color-text-primary)]"
+              >
                 {data?.kpis?.totalEgresados || 0}
               </text>
-              <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-medium fill-[var(--color-text-muted)]">
+              <text
+                x="50%"
+                y="58%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-sm font-medium fill-[var(--color-text-muted)]"
+              >
                 TOTAL EGRESADOS
               </text>
 
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} egresados`]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} egresados`, name]} />
               <Legend
                 layout="horizontal"
                 verticalAlign="bottom"
                 align="center"
                 iconType="circle"
                 iconSize={11}
-                wrapperStyle={{ fontSize: '13px', color: 'var(--color-text-secondary)', paddingTop: 30 }}
+                wrapperStyle={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  paddingTop: '25px',
+                  lineHeight: 1.7
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
       </section>
 
-      {/* Resto de gráficos (puedes seguir mejorando) */}
+      {/* OTROS GRÁFICOS */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard title="Top habilidades demandadas" subtitle="En ofertas activas" loading={loading}>
           <ResponsiveContainer width="100%" height={340}>
@@ -238,7 +256,48 @@ export default function AdminDashboard() {
         </ChartCard>
       </section>
 
-      {error && <p className="text-red-500 text-center">{error}</p>}
+      {/* ESTADO DE POSTULACIONES - RESTAURADO */}
+      {data?.graficas?.distribucionEstados && (
+        <section className="rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2563EB]/10">
+              <CalendarDays className="h-6 w-6 text-[#2563EB]" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Estado de postulaciones</h3>
+              <p className="text-sm text-[var(--color-text-muted)]">Distribución actual del proceso</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+            {data.graficas.distribucionEstados.map((d: any, i: number) => {
+              const colorMap: Record<string, { bg: string; text: string }> = {
+                POSTULADO: { bg: 'rgba(37,99,235,0.08)', text: '#2563EB' },
+                EN_REVISION: { bg: 'rgba(245,158,11,0.08)', text: '#D97706' },
+                ENTREVISTA: { bg: 'rgba(236,72,153,0.08)', text: '#DB2777' },
+                CONTRATADO: { bg: 'rgba(16,185,129,0.08)', text: '#059669' },
+                RECHAZADO: { bg: 'rgba(239,68,68,0.08)', text: '#DC2626' },
+              };
+              const c = colorMap[d.name] || { bg: 'var(--color-bg-subtle)', text: 'var(--color-text-secondary)' };
+
+              return (
+                <div
+                  key={i}
+                  className="rounded-2xl p-6 text-center transition hover:scale-105"
+                  style={{ background: c.bg }}
+                >
+                  <p className="text-5xl font-semibold" style={{ color: c.text }}>{d.value}</p>
+                  <p className="mt-3 text-sm font-medium uppercase tracking-widest" style={{ color: c.text }}>
+                    {d.name.replace('_', ' ')}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {error && <p className="text-red-500 text-center p-6">{error}</p>}
     </main>
   );
 }
