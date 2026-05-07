@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
@@ -9,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, ComposedChart
+  Tooltip, Legend, ResponsiveContainer, ComposedChart, Line
 } from 'recharts';
 
 const COLORS = ['#2563EB', '#EF4444', '#7C3AED', '#10B981', '#F59E0B', '#EC4899'];
@@ -113,6 +112,28 @@ export default function AdminDashboard() {
     }
   };
 
+  // Función Exportar
+  const handleExport = () => {
+    if (!data) {
+      alert("No hay datos para exportar");
+      return;
+    }
+    const exportData = {
+      ...data,
+      exportadoEn: new Date().toISOString(),
+      mensaje: "Dashboard Administrativo - Reporte Oficial"
+    };
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `dashboard-egresados-${new Date().toISOString().slice(0,10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    alert("✅ Dashboard exportado correctamente (JSON)");
+  };
+
   useEffect(() => { load(); }, []);
 
   return (
@@ -134,8 +155,8 @@ export default function AdminDashboard() {
             <button onClick={load} disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Actualizar
             </button>
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl">
-              <Download className="h-4 w-4" /> Exportar
+            <button onClick={handleExport} className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl transition">
+              <Download className="h-4 w-4" /> Exportar Reporte
             </button>
           </div>
         </div>
@@ -168,7 +189,7 @@ export default function AdminDashboard() {
           </ChartCard>
         </div>
 
-        {/* PIE CHART - MEJOR ALINEADO */}
+        {/* PIE CHART - CENTRADO PERFECTO */}
         <ChartCard title="Distribución por carrera" subtitle="Egresados por especialidad" loading={loading}>
           <ResponsiveContainer width="100%" height={380}>
             <PieChart>
@@ -188,75 +209,55 @@ export default function AdminDashboard() {
                 ))}
               </Pie>
 
-              {/* Texto centrado */}
-              <text
-                x="50%"
-                y="46%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-5xl font-bold tracking-tighter fill-[var(--color-text-primary)]"
-              >
+              {/* TEXTO CENTRADO */}
+              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-5xl font-bold tracking-tighter fill-[var(--color-text-primary)]">
                 {data?.kpis?.totalEgresados || 0}
               </text>
-              <text
-                x="50%"
-                y="58%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-sm font-medium fill-[var(--color-text-muted)]"
-              >
+              <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-medium fill-[var(--color-text-muted)]">
                 TOTAL EGRESADOS
               </text>
 
               <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} egresados`, name]} />
-              <Legend
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                iconType="circle"
-                iconSize={11}
-                wrapperStyle={{
-                  fontSize: '13px',
-                  color: 'var(--color-text-secondary)',
-                  paddingTop: '25px',
-                  lineHeight: 1.7
-                }}
-              />
+              <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" iconSize={11}
+                wrapperStyle={{ fontSize: '13px', color: 'var(--color-text-secondary)', paddingTop: '25px' }} />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
       </section>
 
-      {/* OTROS GRÁFICOS */}
+      {/* NUEVOS GRÁFICOS */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Top habilidades demandadas" subtitle="En ofertas activas" loading={loading}>
+        {/* Gráfico 1 Nuevo: Tasa de empleabilidad por cohorte */}
+        <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año de egreso" loading={loading}>
           <ResponsiveContainer width="100%" height={340}>
-            <BarChart data={data?.graficas?.topHabilidades || []} layout="vertical" margin={{ left: 30 }}>
+            <ComposedChart data={data?.graficas?.contratacionesPorCohorte || []}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis dataKey="anio" tick={{ fill: 'var(--color-text-muted)' }} />
+              <YAxis tick={{ fill: 'var(--color-text-muted)' }} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Legend />
+              <Bar dataKey="total" fill="#E2E8F0" name="Total egresados" />
+              <Bar dataKey="contratados" fill="#10B981" name="Contratados" />
+              <Line type="natural" dataKey="contratados" stroke="#10B981" strokeWidth={4} dot={{ r: 6 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Gráfico 2 Nuevo: Top Habilidades (mejorado) */}
+        <ChartCard title="Top habilidades demandadas" subtitle="Más solicitadas en el mercado" loading={loading}>
+          <ResponsiveContainer width="100%" height={340}>
+            <BarChart data={data?.graficas?.topHabilidades?.slice(0, 8) || []} layout="vertical" margin={{ left: 30 }}>
               <CartesianGrid stroke="var(--color-border)" />
               <XAxis type="number" tick={{ fill: 'var(--color-text-muted)' }} />
-              <YAxis type="category" dataKey="name" tick={{ fill: 'var(--color-text-muted)' }} width={150} />
+              <YAxis type="category" dataKey="name" tick={{ fill: 'var(--color-text-muted)' }} width={160} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="value" fill="#2563EB" radius={[0, 12, 12, 0]} barSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-
-        <ChartCard title="Contratación por cohorte" subtitle="Total vs Contratados" loading={loading}>
-          <ResponsiveContainer width="100%" height={340}>
-            <BarChart data={data?.graficas?.contratacionesPorCohorte || []}>
-              <CartesianGrid stroke="var(--color-border)" />
-              <XAxis dataKey="anio" tick={{ fill: 'var(--color-text-muted)' }} />
-              <YAxis tick={{ fill: 'var(--color-text-muted)' }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend />
-              <Bar dataKey="total" fill="#E2E8F0" name="Total egresados" radius={6} />
-              <Bar dataKey="contratados" fill="#2563EB" name="Contratados" radius={6} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
       </section>
 
-      {/* ESTADO DE POSTULACIONES - RESTAURADO */}
+      {/* ESTADO DE POSTULACIONES */}
       {data?.graficas?.distribucionEstados && (
         <section className="rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-8">
           <div className="flex items-center gap-4 mb-6">
@@ -279,13 +280,8 @@ export default function AdminDashboard() {
                 RECHAZADO: { bg: 'rgba(239,68,68,0.08)', text: '#DC2626' },
               };
               const c = colorMap[d.name] || { bg: 'var(--color-bg-subtle)', text: 'var(--color-text-secondary)' };
-
               return (
-                <div
-                  key={i}
-                  className="rounded-2xl p-6 text-center transition hover:scale-105"
-                  style={{ background: c.bg }}
-                >
+                <div key={i} className="rounded-2xl p-6 text-center transition hover:scale-105" style={{ background: c.bg }}>
                   <p className="text-5xl font-semibold" style={{ color: c.text }}>{d.value}</p>
                   <p className="mt-3 text-sm font-medium uppercase tracking-widest" style={{ color: c.text }}>
                     {d.name.replace('_', ' ')}
