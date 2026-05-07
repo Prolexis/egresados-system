@@ -153,26 +153,34 @@ model EgresadoHabilidad {
   @@map("egresados_habilidades")
 }
 
-model OfertaLaboral {
-  id               String       @id @default(uuid())
-  empresaId        String       @map("empresa_id")
-  empresa          Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  titulo           String
-  descripcion      String
-  ubicacion        String?
-  modalidad        Modalidad?
-  tipoContrato     TipoContrato? @map("tipo_contrato")
-  salarioMin       Decimal?     @map("salario_min") @db.Decimal(10, 2)
-  salarioMax       Decimal?     @map("salario_max") @db.Decimal(10, 2)
-  fechaPublicacion DateTime     @default(now()) @map("fecha_publicacion")
-  fechaCierre      DateTime?    @map("fecha_cierre")
-  estado           EstadoOferta @default(ACTIVA)
-  createdAt        DateTime     @default(now()) @map("created_at")
-  updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  habilidades   OfertaHabilidad[]
-  postulaciones Postulacion[]
-  requisitos String?
+model OfertaLaboral {
+  id                String   @id @default(uuid())
+  empresaId         String   @map("empresa_id")
+  empresa           Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  titulo            String
+  descripcion       String
+  ubicacion         String?
+  modalidad         Modalidad?
+  tipoContrato      TipoContrato? @map("tipo_contrato")
+  salarioMin        Decimal?      @map("salario_min") @db.Decimal(10, 2)
+  salarioMax        Decimal?      @map("salario_max") @db.Decimal(10, 2)
+
+  /// ✅ COLUMNAS DE FECHAS AGREGADAS
+  fechaInicio       DateTime?    @map("fecha_inicio") @db.Date
+  fechaCierre       DateTime?    @map("fecha_cierre") @db.Date
+
+  fechaPublicacion  DateTime     @default(now()) @map("fecha_publicacion")
+  estado            EstadoOferta @default(ACTIVA)
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  requisitos        String?
+
+  habilidades       OfertaHabilidad[]
+  postulaciones     Postulacion[]
+
   @@map("ofertas_laborales")
 }
 
