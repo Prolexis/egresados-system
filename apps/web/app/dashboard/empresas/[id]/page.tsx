@@ -56,6 +56,11 @@ function getInitial(nombre?: string) {
   return nombre?.trim()?.charAt(0)?.toUpperCase() || 'E';
 }
 
+function normalizeParamId(id: string | string[] | undefined) {
+  if (Array.isArray(id)) return id[0];
+  return id;
+}
+
 function buildForm(data: any): FormState {
   return {
     email: data?.user?.email ?? '',
@@ -124,11 +129,11 @@ function InfoItem({
   const href = link ? normalizeUrl(String(value || '')) : '';
 
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
+    <div className="group relative min-w-0 overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
       <div className="absolute -right-12 -top-12 h-28 w-28 rounded-full bg-blue-500/10 opacity-0 blur-2xl transition duration-500 group-hover:opacity-100" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent opacity-0 transition group-hover:opacity-100" />
 
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex min-w-0 items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] ring-1 ring-[var(--color-border)] transition duration-300 group-hover:scale-105 group-hover:text-blue-700 dark:group-hover:text-blue-300">
           <Icon className="h-5 w-5" />
         </div>
@@ -173,7 +178,7 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
         {label}
       </span>
@@ -201,7 +206,7 @@ function TextAreaField({
   placeholder?: string;
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
         {label}
       </span>
@@ -241,11 +246,13 @@ function SectionHeader({
 
   return (
     <div className="mb-5 flex items-start gap-3">
-      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${toneClass}`}>
+      <div
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${toneClass}`}
+      >
         <Icon className="h-6 w-6" />
       </div>
 
-      <div>
+      <div className="min-w-0">
         <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
           {eyebrow}
         </p>
@@ -264,7 +271,7 @@ function SectionHeader({
   );
 }
 
-function StatCard({
+function MiniStatCard({
   icon: Icon,
   label,
   value,
@@ -282,20 +289,22 @@ function StatCard({
   }[tone];
 
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
+    <div className="group relative min-w-0 overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
       <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-blue-500/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
 
-      <div className="relative flex items-center gap-3">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 transition group-hover:scale-105 ${toneClass}`}>
+      <div className="relative flex min-w-0 items-center gap-3">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 transition group-hover:scale-105 ${toneClass}`}
+        >
           <Icon className="h-5 w-5" />
         </div>
 
-        <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
             {label}
           </p>
 
-          <p className="mt-1 text-lg font-black text-[var(--color-text-primary)]">
+          <p className="mt-1 truncate text-lg font-black text-[var(--color-text-primary)]">
             {value}
           </p>
         </div>
@@ -308,11 +317,11 @@ function OfferCard({ oferta }: { oferta: any }) {
   const activa = oferta.estado === 'ACTIVA';
 
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-xl">
+    <div className="group relative min-w-0 overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-xl">
       <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-rose-500/10 opacity-0 blur-3xl transition duration-500 group-hover:opacity-100" />
       <div className="absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-blue-500/10 opacity-0 blur-3xl transition duration-500 group-hover:opacity-100" />
 
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20 dark:text-rose-300">
             <Briefcase className="h-6 w-6" />
@@ -356,9 +365,11 @@ function OfferCard({ oferta }: { oferta: any }) {
 }
 
 function EmpresaDetailPageContent() {
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const id = normalizeParamId(params?.id);
 
   const [empresa, setEmpresa] = useState<any>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -376,7 +387,7 @@ function EmpresaDetailPageContent() {
       try {
         if (showLoader) setLoading(true);
 
-        const data = await empresasApi.get(id as string);
+        const data = await empresasApi.get(id);
 
         setEmpresa(data);
         setForm(buildForm(data));
@@ -417,7 +428,7 @@ function EmpresaDetailPageContent() {
     setSaving(true);
 
     try {
-      await empresasApi.update(id as string, {
+      await empresasApi.update(id, {
         email: form.email,
         nombreComercial: form.nombreComercial,
         razonSocial: form.razonSocial,
@@ -464,7 +475,7 @@ function EmpresaDetailPageContent() {
     setDeleting(true);
 
     try {
-      await empresasApi.delete(id as string);
+      await empresasApi.delete(id);
       router.push('/dashboard/empresas');
     } catch (error) {
       console.error(error);
@@ -484,7 +495,7 @@ function EmpresaDetailPageContent() {
 
   if (loading) {
     return (
-      <main className="relative space-y-6 overflow-hidden">
+      <main className="relative max-w-full space-y-6 overflow-hidden">
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -left-24 top-40 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
 
@@ -506,7 +517,7 @@ function EmpresaDetailPageContent() {
 
   if (!empresa) {
     return (
-      <main className="space-y-6 animate-fadeIn">
+      <main className="max-w-full space-y-6 overflow-hidden animate-fadeIn">
         <TopButton onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
           Volver
@@ -530,7 +541,7 @@ function EmpresaDetailPageContent() {
   }
 
   return (
-    <main className="relative space-y-7 pb-10 animate-fadeIn">
+    <main className="relative max-w-full space-y-7 overflow-hidden pb-10 animate-fadeIn">
       <div className="pointer-events-none absolute -right-28 top-10 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -left-28 top-96 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
 
@@ -541,7 +552,7 @@ function EmpresaDetailPageContent() {
         </div>
       )}
 
-      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative flex max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <TopButton onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
           Volver
@@ -584,35 +595,35 @@ function EmpresaDetailPageContent() {
         </div>
       </div>
 
-      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm">
+      <section className="relative max-w-full overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm">
         <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-400/10" />
         <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-400/10" />
         <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] [background-size:22px_22px]" />
 
-        <div className="relative h-48 bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-800">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.24),transparent_34%)]" />
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-800 px-5 pb-28 pt-7 sm:px-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_34%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)]" />
           <div className="absolute -bottom-24 right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
 
-          <div className="absolute left-6 top-6 flex flex-wrap gap-2 sm:left-8">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white/90 backdrop-blur">
+          <div className="relative flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white/90 shadow-sm backdrop-blur">
               <Building2 className="h-4 w-4" />
               Perfil empresarial
             </span>
 
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-emerald-100 backdrop-blur">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-emerald-100 shadow-sm backdrop-blur">
               <ShieldCheck className="h-4 w-4" />
               Sincronizado
             </span>
           </div>
         </div>
 
-        <div className="relative px-6 pb-8 sm:px-8">
+        <div className="relative px-4 pb-8 sm:px-8">
           <div className="-mt-20 rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]/95 p-5 shadow-2xl backdrop-blur-xl">
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <div className="relative">
-                  <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-[2rem] border border-[var(--color-border)] bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-transparent text-4xl font-black text-blue-700 shadow-sm ring-1 ring-blue-500/10 dark:text-blue-300">
+            <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] xl:items-center">
+              <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="relative shrink-0">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] border border-[var(--color-border)] bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-transparent text-4xl font-black text-blue-700 shadow-sm ring-1 ring-blue-500/10 dark:text-blue-300 sm:h-28 sm:w-28">
                     {empresa.logoUrl ? (
                       <img
                         src={empresa.logoUrl}
@@ -642,11 +653,11 @@ function EmpresaDetailPageContent() {
                     </span>
                   </div>
 
-                  <h1 className="text-3xl font-display font-black tracking-tight text-[var(--color-text-primary)] sm:text-4xl">
+                  <h1 className="max-w-full truncate text-3xl font-display font-black tracking-tight text-[var(--color-text-primary)] sm:text-4xl">
                     {empresa.nombreComercial || 'Empresa sin nombre'}
                   </h1>
 
-                  <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--color-text-secondary)]">
+                  <p className="mt-2 max-w-2xl overflow-hidden text-ellipsis text-sm font-semibold leading-6 text-[var(--color-text-secondary)]">
                     {empresa.razonSocial || 'Sin razón social registrada'}
                   </p>
 
@@ -664,10 +675,27 @@ function EmpresaDetailPageContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[560px]">
-                <StatCard icon={Briefcase} label="Ofertas" value={totalOfertas} tone="blue" />
-                <StatCard icon={Activity} label="Activas" value={ofertasActivas} tone="emerald" />
-                <StatCard icon={Database} label="Estado" value="Activo" tone="indigo" />
+              <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                <MiniStatCard
+                  icon={Briefcase}
+                  label="Ofertas"
+                  value={totalOfertas}
+                  tone="blue"
+                />
+
+                <MiniStatCard
+                  icon={Activity}
+                  label="Activas"
+                  value={ofertasActivas}
+                  tone="emerald"
+                />
+
+                <MiniStatCard
+                  icon={Database}
+                  label="Estado"
+                  value="Activo"
+                  tone="indigo"
+                />
               </div>
             </div>
           </div>
@@ -867,7 +895,7 @@ export default function EmpresaDetailPage() {
   return (
     <Suspense
       fallback={
-        <main className="relative space-y-6 overflow-hidden">
+        <main className="relative max-w-full space-y-6 overflow-hidden">
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
           <div className="pointer-events-none absolute -left-24 top-40 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
 
