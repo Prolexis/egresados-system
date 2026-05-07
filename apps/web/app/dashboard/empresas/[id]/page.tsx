@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { empresasApi } from '@/lib/api';
 import {
@@ -17,6 +17,15 @@ import {
   Save,
   Trash2,
   X,
+  ShieldCheck,
+  Sparkles,
+  Database,
+  Activity,
+  ExternalLink,
+  Landmark,
+  BadgeCheck,
+  AlertTriangle,
+  Factory,
 } from 'lucide-react';
 
 type FormState = {
@@ -61,40 +70,90 @@ function buildForm(data: any): FormState {
   };
 }
 
+function normalizeUrl(value?: string | null) {
+  if (!value) return '';
+  const url = String(value).trim();
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+}
+
+function TopButton({
+  children,
+  onClick,
+  variant = 'neutral',
+  disabled = false,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'neutral' | 'primary' | 'danger';
+  disabled?: boolean;
+}) {
+  const styles = {
+    neutral:
+      'border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text-primary)]',
+    primary:
+      'border-blue-600 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600',
+    danger:
+      'border-rose-600 bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 text-white hover:from-rose-500 hover:via-red-500 hover:to-rose-600',
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-black shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 ${styles[variant]}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function InfoItem({
   icon: Icon,
   label,
   value,
-  link,
+  link = false,
 }: {
   icon: any;
   label: string;
   value?: string | number | null;
   link?: boolean;
 }) {
+  const href = link ? normalizeUrl(String(value || '')) : '';
+
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/70">
-      <Icon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+    <div className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
+      <div className="absolute -right-12 -top-12 h-28 w-28 rounded-full bg-blue-500/10 opacity-0 blur-2xl transition duration-500 group-hover:opacity-100" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent opacity-0 transition group-hover:opacity-100" />
 
-      <div className="min-w-0">
-        <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-          {label}
-        </p>
+      <div className="relative flex items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] ring-1 ring-[var(--color-border)] transition duration-300 group-hover:scale-105 group-hover:text-blue-700 dark:group-hover:text-blue-300">
+          <Icon className="h-5 w-5" />
+        </div>
 
-        {link && value ? (
-          <a
-            href={String(value)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="truncate text-sm font-semibold text-blue-700 hover:underline dark:text-blue-300"
-          >
-            {value}
-          </a>
-        ) : (
-          <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-            {value || '—'}
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
+            {label}
           </p>
-        )}
+
+          {link && value ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-sm font-bold text-blue-700 hover:underline dark:text-blue-300"
+            >
+              <span className="truncate">{value}</span>
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+            </a>
+          ) : (
+            <p className="mt-1 truncate text-sm font-bold text-[var(--color-text-primary)]">
+              {value || '—'}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -105,23 +164,26 @@ function Field({
   value,
   onChange,
   type = 'text',
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  placeholder?: string;
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
         {label}
       </span>
 
       <input
         type={type}
         value={value}
+        placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:bg-slate-800 dark:focus:ring-blue-500/20"
+        className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] outline-none transition duration-300 placeholder:text-[var(--color-text-muted)] hover:border-blue-400/60 focus:border-blue-500 focus:bg-[var(--color-bg-surface)] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10"
       />
     </label>
   );
@@ -131,24 +193,165 @@ function TextAreaField({
   label,
   value,
   onChange,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      <span className="mb-2 block text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
         {label}
       </span>
 
       <textarea
         value={value}
-        rows={4}
+        rows={5}
+        placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:bg-slate-800 dark:focus:ring-blue-500/20"
+        className="w-full resize-none rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-sm font-semibold leading-6 text-[var(--color-text-primary)] outline-none transition duration-300 placeholder:text-[var(--color-text-muted)] hover:border-blue-400/60 focus:border-blue-500 focus:bg-[var(--color-bg-surface)] focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10"
       />
     </label>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  eyebrow,
+  title,
+  description,
+  tone = 'blue',
+}: {
+  icon: any;
+  eyebrow: string;
+  title: string;
+  description?: string;
+  tone?: 'blue' | 'indigo' | 'emerald' | 'rose' | 'slate';
+}) {
+  const toneClass = {
+    blue: 'bg-blue-500/10 text-blue-700 ring-blue-500/20 dark:text-blue-300',
+    indigo: 'bg-indigo-500/10 text-indigo-700 ring-indigo-500/20 dark:text-indigo-300',
+    emerald: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300',
+    rose: 'bg-rose-500/10 text-rose-700 ring-rose-500/20 dark:text-rose-300',
+    slate:
+      'bg-[var(--color-bg-subtle)] text-[var(--color-text-muted)] ring-[var(--color-border)]',
+  }[tone];
+
+  return (
+    <div className="mb-5 flex items-start gap-3">
+      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${toneClass}`}>
+        <Icon className="h-6 w-6" />
+      </div>
+
+      <div>
+        <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
+          {eyebrow}
+        </p>
+
+        <h2 className="mt-1 text-xl font-display font-black tracking-tight text-[var(--color-text-primary)]">
+          {title}
+        </h2>
+
+        {description && (
+          <p className="mt-1 text-sm font-medium leading-6 text-[var(--color-text-secondary)]">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone = 'blue',
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  tone?: 'blue' | 'emerald' | 'indigo';
+}) {
+  const toneClass = {
+    blue: 'bg-blue-500/10 text-blue-700 ring-blue-500/20 dark:text-blue-300',
+    emerald: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300',
+    indigo: 'bg-indigo-500/10 text-indigo-700 ring-indigo-500/20 dark:text-indigo-300',
+  }[tone];
+
+  return (
+    <div className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-lg">
+      <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-blue-500/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
+
+      <div className="relative flex items-center gap-3">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 transition group-hover:scale-105 ${toneClass}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+            {label}
+          </p>
+
+          <p className="mt-1 text-lg font-black text-[var(--color-text-primary)]">
+            {value}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OfferCard({ oferta }: { oferta: any }) {
+  const activa = oferta.estado === 'ACTIVA';
+
+  return (
+    <div className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-bg-surface)] hover:shadow-xl">
+      <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-rose-500/10 opacity-0 blur-3xl transition duration-500 group-hover:opacity-100" />
+      <div className="absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-blue-500/10 opacity-0 blur-3xl transition duration-500 group-hover:opacity-100" />
+
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20 dark:text-rose-300">
+            <Briefcase className="h-6 w-6" />
+          </div>
+
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-black text-[var(--color-text-primary)]">
+              {oferta.titulo || 'Oferta sin título'}
+            </h3>
+
+            <p className="mt-1 text-sm font-semibold text-[var(--color-text-secondary)]">
+              {oferta.modalidad || 'Sin modalidad'} ·{' '}
+              {oferta.tipoContrato?.replace('_', ' ') || 'Sin contrato'}
+            </p>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-1 text-xs font-bold text-[var(--color-text-secondary)]">
+                <Activity className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
+                {oferta._count?.postulaciones || 0} postulantes
+              </span>
+
+              <span
+                className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider ring-1 ${
+                  activa
+                    ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300'
+                    : 'bg-slate-500/10 text-[var(--color-text-secondary)] ring-[var(--color-border)]'
+                }`}
+              >
+                {oferta.estado || 'SIN ESTADO'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] transition group-hover:text-blue-700 dark:group-hover:text-blue-300">
+          <BadgeCheck className="h-5 w-5" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -271,35 +474,54 @@ function EmpresaDetailPageContent() {
     }
   };
 
+  const totalOfertas = useMemo(() => {
+    return empresa?._count?.ofertas || empresa?.ofertas?.length || 0;
+  }, [empresa]);
+
+  const ofertasActivas = useMemo(() => {
+    return empresa?.ofertas?.filter((oferta: any) => oferta.estado === 'ACTIVA')?.length || 0;
+  }, [empresa]);
+
   if (loading) {
     return (
-      <main className="space-y-6">
-        <div className="h-10 w-64 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-96 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800" />
+      <main className="relative space-y-6 overflow-hidden">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 top-40 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+
+        <div className="relative flex items-center justify-between">
+          <div className="h-11 w-36 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
+          <div className="h-11 w-48 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
+        </div>
+
+        <div className="relative h-[420px] animate-pulse rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]" />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+          <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+          <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+        </div>
       </main>
     );
   }
 
   if (!empresa) {
     return (
-      <main className="space-y-6">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-        >
+      <main className="space-y-6 animate-fadeIn">
+        <TopButton onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
           Volver
-        </button>
+        </TopButton>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-16 text-center dark:border-slate-700 dark:bg-slate-900">
-          <Building2 className="mx-auto h-16 w-16 text-slate-300 dark:text-slate-600" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] p-16 text-center shadow-sm">
+          <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
 
-          <h2 className="mt-5 text-xl font-black text-slate-900 dark:text-white">
+          <AlertTriangle className="relative mx-auto h-16 w-16 text-[var(--color-text-muted)]" />
+
+          <h2 className="relative mt-5 text-xl font-display font-black text-[var(--color-text-primary)]">
             Empresa no encontrada
           </h2>
 
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <p className="relative mt-2 text-sm text-[var(--color-text-secondary)]">
             La empresa que buscas no existe o no tienes permisos para verla.
           </p>
         </div>
@@ -308,192 +530,213 @@ function EmpresaDetailPageContent() {
   }
 
   return (
-    <main className="space-y-6">
+    <main className="relative space-y-7 pb-10 animate-fadeIn">
+      <div className="pointer-events-none absolute -right-28 top-10 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-28 top-96 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+
       {successMessage && (
-        <div className="fixed right-6 top-24 z-50 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-black text-emerald-700 shadow-xl dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+        <div className="fixed right-6 top-24 z-50 flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-sm font-black text-emerald-700 shadow-2xl backdrop-blur-xl dark:text-emerald-300">
           <CheckCircle2 className="h-5 w-5" />
           {successMessage}
         </div>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="inline-flex w-fit items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-        >
+      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <TopButton onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
           Volver
-        </button>
+        </TopButton>
 
         <div className="flex flex-wrap gap-2">
           {editing ? (
             <>
-              <button
-                type="button"
-                onClick={cancelEdit}
-                disabled={saving}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-              >
+              <TopButton onClick={cancelEdit} disabled={saving}>
                 <X className="h-4 w-4" />
                 Cancelar
-              </button>
+              </TopButton>
 
-              <button
-                type="button"
-                onClick={saveChanges}
-                disabled={saving}
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-black text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
+              <TopButton onClick={saveChanges} disabled={saving} variant="primary">
                 {saving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
                 {saving ? 'Guardando...' : 'Guardar cambios'}
-              </button>
+              </TopButton>
             </>
           ) : (
             <>
-              <button
-                type="button"
-                onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-              >
+              <TopButton onClick={() => setEditing(true)}>
                 <Edit className="h-4 w-4" />
                 Editar
-              </button>
+              </TopButton>
 
-              <button
-                type="button"
-                onClick={deleteEmpresa}
-                disabled={deleting}
-                className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-black text-white shadow-lg transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
+              <TopButton onClick={deleteEmpresa} disabled={deleting} variant="danger">
                 {deleting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Trash2 className="h-4 w-4" />
                 )}
                 {deleting ? 'Eliminando...' : 'Eliminar'}
-              </button>
+              </TopButton>
             </>
           )}
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div className="relative h-44 bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-700">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_35%)]" />
-          <div className="absolute -bottom-20 right-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+      <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm">
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-400/10" />
+        <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-400/10" />
+        <div className="absolute inset-0 opacity-[0.035] [background-image:radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] [background-size:22px_22px]" />
+
+        <div className="relative h-48 bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-800">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.24),transparent_34%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.08),transparent)]" />
+          <div className="absolute -bottom-24 right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+
+          <div className="absolute left-6 top-6 flex flex-wrap gap-2 sm:left-8">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-white/90 backdrop-blur">
+              <Building2 className="h-4 w-4" />
+              Perfil empresarial
+            </span>
+
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-emerald-100 backdrop-blur">
+              <ShieldCheck className="h-4 w-4" />
+              Sincronizado
+            </span>
+          </div>
         </div>
 
-        <div className="px-6 pb-8 sm:px-8">
-          <div className="-mt-16 rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-white text-3xl font-black text-blue-700 ring-4 ring-white shadow-lg dark:bg-slate-800 dark:text-blue-300 dark:ring-slate-900">
-                  {getInitial(empresa.nombreComercial)}
+        <div className="relative px-6 pb-8 sm:px-8">
+          <div className="-mt-20 rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]/95 p-5 shadow-2xl backdrop-blur-xl">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="relative">
+                  <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-[2rem] border border-[var(--color-border)] bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-transparent text-4xl font-black text-blue-700 shadow-sm ring-1 ring-blue-500/10 dark:text-blue-300">
+                    {empresa.logoUrl ? (
+                      <img
+                        src={empresa.logoUrl}
+                        alt={empresa.nombreComercial || 'Logo empresa'}
+                        className="h-full w-full rounded-[2rem] object-cover"
+                      />
+                    ) : (
+                      getInitial(empresa.nombreComercial)
+                    )}
+                  </div>
+
+                  <div className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-2xl bg-emerald-500 text-white ring-4 ring-[var(--color-bg-surface)]">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
                 </div>
 
-                <div>
-                  <h1 className="text-2xl font-black text-slate-950 dark:text-white md:text-3xl">
+                <div className="min-w-0">
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-300">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Empresa registrada
+                    </span>
+
+                    <span className="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-indigo-700 ring-1 ring-indigo-500/20 dark:text-indigo-300">
+                      <Landmark className="h-3.5 w-3.5" />
+                      RUC {empresa.ruc || '—'}
+                    </span>
+                  </div>
+
+                  <h1 className="text-3xl font-display font-black tracking-tight text-[var(--color-text-primary)] sm:text-4xl">
                     {empresa.nombreComercial || 'Empresa sin nombre'}
                   </h1>
 
-                  <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
+                  <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--color-text-secondary)]">
                     {empresa.razonSocial || 'Sin razón social registrada'}
                   </p>
 
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
-                      RUC: {empresa.ruc || '—'}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] shadow-sm">
+                      <Briefcase className="h-4 w-4 text-[var(--color-text-muted)]" />
+                      {empresa.sector || 'Sin sector'}
                     </span>
 
-                    <span className="rounded-full bg-slate-50 px-3 py-1 text-xs font-black text-slate-500 ring-1 ring-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
-                      {empresa.user?.email || 'Sin correo'}
+                    <span className="inline-flex items-center gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] shadow-sm">
+                      <MapPin className="h-4 w-4 text-[var(--color-text-muted)]" />
+                      {empresa.ubicacion || 'Sin ubicación'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-100 dark:bg-slate-800 dark:ring-slate-700">
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                  Ofertas
-                </p>
-
-                <p className="mt-1 text-2xl font-black text-slate-950 dark:text-white">
-                  {empresa._count?.ofertas || empresa.ofertas?.length || 0}
-                </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[560px]">
+                <StatCard icon={Briefcase} label="Ofertas" value={totalOfertas} tone="blue" />
+                <StatCard icon={Activity} label="Activas" value={ofertasActivas} tone="emerald" />
+                <StatCard icon={Database} label="Estado" value="Activo" tone="indigo" />
               </div>
             </div>
           </div>
 
           {editing ? (
-            <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950/60">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-500/10">
-                  <Edit className="h-5 w-5 text-blue-700 dark:text-blue-300" />
-                </div>
-
-                <div>
-                  <h2 className="text-lg font-black text-slate-950 dark:text-white">
-                    Editar empresa
-                  </h2>
-
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Actualiza la información principal de la empresa.
-                  </p>
-                </div>
-              </div>
+            <div className="mt-8 rounded-[2rem] border border-blue-500/20 bg-blue-500/5 p-5 shadow-sm">
+              <SectionHeader
+                icon={Edit}
+                eyebrow="Modo edición"
+                title="Editar empresa"
+                description="Actualiza la información principal de la empresa. Al guardar, se aplicarán los cambios en el backend."
+                tone="blue"
+              />
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field
                   label="Correo"
                   type="email"
                   value={form.email}
+                  placeholder="empresa@correo.com"
                   onChange={(value) => updateForm('email', value)}
                 />
 
                 <Field
                   label="RUC"
                   value={form.ruc}
+                  placeholder="Ingrese RUC"
                   onChange={(value) => updateForm('ruc', value)}
                 />
 
                 <Field
                   label="Nombre comercial"
                   value={form.nombreComercial}
+                  placeholder="Nombre comercial"
                   onChange={(value) => updateForm('nombreComercial', value)}
                 />
 
                 <Field
                   label="Razón social"
                   value={form.razonSocial}
+                  placeholder="Razón social"
                   onChange={(value) => updateForm('razonSocial', value)}
                 />
 
                 <Field
                   label="Sector"
                   value={form.sector}
+                  placeholder="Sector empresarial"
                   onChange={(value) => updateForm('sector', value)}
                 />
 
                 <Field
                   label="Ubicación"
                   value={form.ubicacion}
+                  placeholder="Ubicación"
                   onChange={(value) => updateForm('ubicacion', value)}
                 />
 
                 <Field
                   label="Sitio web"
                   value={form.sitioWeb}
+                  placeholder="https://..."
                   onChange={(value) => updateForm('sitioWeb', value)}
                 />
 
                 <Field
                   label="Logo URL"
                   value={form.logoUrl}
+                  placeholder="https://..."
                   onChange={(value) => updateForm('logoUrl', value)}
                 />
 
@@ -501,122 +744,118 @@ function EmpresaDetailPageContent() {
                   <TextAreaField
                     label="Descripción"
                     value={form.descripcion}
+                    placeholder="Describe brevemente la empresa..."
                     onChange={(value) => updateForm('descripcion', value)}
                   />
                 </div>
               </div>
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InfoItem icon={Mail} label="Correo" value={empresa.user?.email} />
-              <InfoItem icon={Building2} label="RUC" value={empresa.ruc} />
-              <InfoItem icon={Briefcase} label="Sector" value={empresa.sector} />
-              <InfoItem icon={MapPin} label="Ubicación" value={empresa.ubicacion} />
-              <InfoItem icon={Globe2} label="Sitio web" value={empresa.sitioWeb} link />
-              <InfoItem icon={FileText} label="Razón social" value={empresa.razonSocial} />
-            </div>
-          )}
+            <>
+              <div className="mt-8">
+                <SectionHeader
+                  icon={FileText}
+                  eyebrow="Información empresarial"
+                  title="Datos de la empresa"
+                  description="Información principal registrada en el sistema."
+                  tone="blue"
+                />
 
-          {!editing && empresa.descripcion && (
-            <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/70">
-              <p className="mb-2 text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                Descripción
-              </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <InfoItem icon={Mail} label="Correo" value={empresa.user?.email} />
+                  <InfoItem icon={Building2} label="RUC" value={empresa.ruc} />
+                  <InfoItem icon={Briefcase} label="Sector" value={empresa.sector} />
+                  <InfoItem icon={MapPin} label="Ubicación" value={empresa.ubicacion} />
+                  <InfoItem icon={Globe2} label="Sitio web" value={empresa.sitioWeb} link />
+                  <InfoItem icon={FileText} label="Razón social" value={empresa.razonSocial} />
+                </div>
+              </div>
 
-              <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                {empresa.descripcion}
-              </p>
-            </div>
+              {empresa.descripcion && (
+                <div className="relative mt-6 overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-6 shadow-sm">
+                  <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
+
+                  <div className="relative">
+                    <p className="mb-2 text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
+                      Descripción
+                    </p>
+
+                    <p className="text-sm font-medium leading-7 text-[var(--color-text-secondary)]">
+                      {empresa.descripcion}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex items-center gap-3">
-            <Briefcase className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 shadow-sm">
+          <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-blue-500/10 blur-3xl" />
+
+          <div className="relative flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-300">
+              <Factory className="h-6 w-6" />
+            </div>
 
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
                 Total de ofertas
               </p>
 
-              <p className="text-2xl font-black text-slate-950 dark:text-white">
-                {empresa._count?.ofertas || empresa.ofertas?.length || 0}
+              <p className="text-2xl font-black text-[var(--color-text-primary)]">
+                {totalOfertas}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 lg:col-span-2">
-          <div className="flex items-center gap-3">
-            <Building2 className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+        <div className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 shadow-sm lg:col-span-2">
+          <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-emerald-500/10 blur-3xl" />
+
+          <div className="relative flex items-start gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-300">
+              <Database className="h-6 w-6" />
+            </div>
 
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
                 Estado del perfil
               </p>
 
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Información sincronizada con PostgreSQL. Los cambios se guardan
-                mediante PUT /api/empresas/:id.
+              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--color-text-secondary)]">
+                Información sincronizada con PostgreSQL. Los cambios se guardan mediante PUT /api/empresas/:id.
               </p>
+
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-300">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Sincronizado
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {empresa.ofertas?.length > 0 && (
-        <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-500/10">
-              <Briefcase className="h-6 w-6 text-rose-700 dark:text-rose-300" />
+        <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-7 shadow-sm">
+          <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl" />
+
+          <div className="relative">
+            <SectionHeader
+              icon={Briefcase}
+              eyebrow="Gestión laboral"
+              title="Ofertas publicadas"
+              description={`${empresa.ofertas.length} oferta(s) registrada(s) por esta empresa.`}
+              tone="rose"
+            />
+
+            <div className="grid grid-cols-1 gap-4">
+              {empresa.ofertas.map((oferta: any) => (
+                <OfferCard key={oferta.id} oferta={oferta} />
+              ))}
             </div>
-
-            <div>
-              <h2 className="text-lg font-black text-slate-950 dark:text-white">
-                Ofertas publicadas
-              </h2>
-
-              <p className="text-sm font-medium text-slate-400 dark:text-slate-500">
-                {empresa.ofertas.length} oferta(s) registrada(s)
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {empresa.ofertas.map((oferta: any) => (
-              <div
-                key={oferta.id}
-                className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <h3 className="font-black text-slate-900 dark:text-white">
-                    {oferta.titulo}
-                  </h3>
-
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {oferta.modalidad} · {oferta.tipoContrato?.replace('_', ' ')}
-                  </p>
-                </div>
-
-                <div className="text-left sm:text-right">
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                    {oferta._count?.postulaciones || 0} postulantes
-                  </p>
-
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-1 text-xs font-black ${
-                      oferta.estado === 'ACTIVA'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
-                        : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {oferta.estado}
-                  </span>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
       )}
@@ -628,9 +867,22 @@ export default function EmpresaDetailPage() {
   return (
     <Suspense
       fallback={
-        <main className="space-y-6">
-          <div className="h-10 w-64 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
-          <div className="h-96 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800" />
+        <main className="relative space-y-6 overflow-hidden">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-24 top-40 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+
+          <div className="relative flex items-center justify-between">
+            <div className="h-11 w-36 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
+            <div className="h-11 w-48 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
+          </div>
+
+          <div className="relative h-[420px] animate-pulse rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)]" />
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+            <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+            <div className="h-28 animate-pulse rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+          </div>
         </main>
       }
     >
