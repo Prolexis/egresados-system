@@ -112,26 +112,17 @@ export default function AdminDashboard() {
     }
   };
 
-  // Función Exportar
   const handleExport = () => {
-    if (!data) {
-      alert("No hay datos para exportar");
-      return;
-    }
-    const exportData = {
-      ...data,
-      exportadoEn: new Date().toISOString(),
-      mensaje: "Dashboard Administrativo - Reporte Oficial"
-    };
-    const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    if (!data) return alert("No hay datos para exportar");
+    const exportData = { ...data, exportadoEn: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `dashboard-egresados-${new Date().toISOString().slice(0,10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    alert("✅ Dashboard exportado correctamente (JSON)");
+    alert("✅ Reporte exportado correctamente");
   };
 
   useEffect(() => { load(); }, []);
@@ -172,7 +163,6 @@ export default function AdminDashboard() {
 
       {/* Gráficos principales */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Evolución mensual */}
         <div className="lg:col-span-2">
           <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading}>
             <ResponsiveContainer width="100%" height={380}>
@@ -189,7 +179,7 @@ export default function AdminDashboard() {
           </ChartCard>
         </div>
 
-        {/* PIE CHART - CENTRADO PERFECTO */}
+        {/* PIE CHART - CENTRADO Y PULIDO */}
         <ChartCard title="Distribución por carrera" subtitle="Egresados por especialidad" loading={loading}>
           <ResponsiveContainer width="100%" height={380}>
             <PieChart>
@@ -209,26 +199,50 @@ export default function AdminDashboard() {
                 ))}
               </Pie>
 
-              {/* TEXTO CENTRADO */}
-              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="middle" className="text-5xl font-bold tracking-tighter fill-[var(--color-text-primary)]">
+              {/* NÚMERO CENTRAL */}
+              <text
+                x="50%"
+                y="44%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-6xl font-bold tracking-tighter fill-[var(--color-text-primary)]"
+              >
                 {data?.kpis?.totalEgresados || 0}
               </text>
-              <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-medium fill-[var(--color-text-muted)]">
+
+              {/* TEXTO "TOTAL EGRESADOS" DEBAJO */}
+              <text
+                x="50%"
+                y="57%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-sm font-medium fill-[var(--color-text-muted)] tracking-widest"
+              >
                 TOTAL EGRESADOS
               </text>
 
               <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} egresados`, name]} />
-              <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" iconSize={11}
-                wrapperStyle={{ fontSize: '13px', color: 'var(--color-text-secondary)', paddingTop: '25px' }} />
+              <Legend
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+                iconType="circle"
+                iconSize={11}
+                wrapperStyle={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-secondary)',
+                  paddingTop: '25px',
+                  lineHeight: 1.7
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
       </section>
 
-      {/* NUEVOS GRÁFICOS */}
+      {/* Otros gráficos */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico 1 Nuevo: Tasa de empleabilidad por cohorte */}
-        <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año de egreso" loading={loading}>
+        <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año" loading={loading}>
           <ResponsiveContainer width="100%" height={340}>
             <ComposedChart data={data?.graficas?.contratacionesPorCohorte || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -243,8 +257,7 @@ export default function AdminDashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gráfico 2 Nuevo: Top Habilidades (mejorado) */}
-        <ChartCard title="Top habilidades demandadas" subtitle="Más solicitadas en el mercado" loading={loading}>
+        <ChartCard title="Top habilidades demandadas" subtitle="Más solicitadas" loading={loading}>
           <ResponsiveContainer width="100%" height={340}>
             <BarChart data={data?.graficas?.topHabilidades?.slice(0, 8) || []} layout="vertical" margin={{ left: 30 }}>
               <CartesianGrid stroke="var(--color-border)" />
@@ -257,7 +270,7 @@ export default function AdminDashboard() {
         </ChartCard>
       </section>
 
-      {/* ESTADO DE POSTULACIONES */}
+      {/* Estado de postulaciones */}
       {data?.graficas?.distribucionEstados && (
         <section className="rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-8">
           <div className="flex items-center gap-4 mb-6">
