@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ofertasApi, postulacionesApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import Link from 'next/link';
@@ -22,6 +23,7 @@ import {
   Building2,
   ShieldCheck,
   SlidersHorizontal,
+  Flame,
 } from 'lucide-react';
 
 const modalidadColors: Record<string, { bg: string; text: string; ring: string }> = {
@@ -59,7 +61,6 @@ function formatShortDate(dateStr?: string) {
   if (!dateStr) return '—';
 
   const date = new Date(dateStr);
-
   if (Number.isNaN(date.getTime())) return '—';
 
   return date.toLocaleDateString('es-PE', {
@@ -72,7 +73,6 @@ function getDaysLeft(fechaFin?: string) {
   if (!fechaFin) return null;
 
   const endDate = new Date(fechaFin);
-
   if (Number.isNaN(endDate.getTime())) return null;
 
   return Math.ceil(
@@ -196,7 +196,6 @@ function SkeletonCard() {
     <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 shadow-sm">
       <div className="flex gap-4">
         <div className="h-12 w-12 animate-pulse rounded-2xl bg-[var(--color-bg-subtle)]" />
-
         <div className="flex-1 space-y-3">
           <div className="h-4 w-3/4 animate-pulse rounded-lg bg-[var(--color-bg-subtle)]" />
           <div className="h-3 w-1/2 animate-pulse rounded-lg bg-[var(--color-bg-subtle)]" />
@@ -209,6 +208,39 @@ function SkeletonCard() {
         <div className="h-7 w-28 animate-pulse rounded-full bg-[var(--color-bg-subtle)]" />
         <div className="h-7 w-20 animate-pulse rounded-full bg-[var(--color-bg-subtle)]" />
       </div>
+    </div>
+  );
+}
+
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  accent = 'blue',
+}: {
+  title: string;
+  value: string | number;
+  subtitle: string;
+  accent?: 'blue' | 'emerald' | 'amber' | 'slate';
+}) {
+  const accentClass = {
+    blue: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
+    emerald: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    amber: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    slate: 'bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]',
+  }[accent];
+
+  return (
+    <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className={`mb-3 inline-flex rounded-2xl px-3 py-1 text-xs font-black uppercase tracking-widest ${accentClass}`}>
+        {title}
+      </div>
+      <p className="text-2xl font-black tracking-tight text-[var(--color-text-primary)]">
+        {value}
+      </p>
+      <p className="mt-1 text-xs font-medium text-[var(--color-text-secondary)]">
+        {subtitle}
+      </p>
     </div>
   );
 }
@@ -280,16 +312,35 @@ export default function OfertasPage() {
   const hasFilters =
     filters.search !== '' || filters.modalidad !== '' || filters.estado !== 'ACTIVA';
 
+  const activeCount = useMemo(
+    () => ofertas.filter((o) => o.estado === 'ACTIVA').length,
+    [ofertas]
+  );
+
+  const closingSoonCount = useMemo(
+    () =>
+      ofertas.filter((o) => {
+        const days = getDaysLeft(o.fechaFin);
+        return o.estado === 'ACTIVA' && days !== null && days >= 0 && days <= 7;
+      }).length,
+    [ofertas]
+  );
+
+  const remoteCount = useMemo(
+    () => ofertas.filter((o) => o.modalidad === 'REMOTO').length,
+    [ofertas]
+  );
+
   return (
     <main className="space-y-7 animate-fadeIn">
       <section className="relative overflow-hidden rounded-[2rem] border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-600" />
         <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-400/10" />
         <div className="absolute -bottom-24 left-1/3 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-400/10" />
+        <div className="absolute inset-0 opacity-[0.03] [background-image:radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] [background-size:22px_22px]" />
 
         <div className="relative p-6 sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-xs font-black uppercase tracking-widest text-[var(--color-text-secondary)]">
                 <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                 Bolsa laboral
@@ -300,35 +351,43 @@ export default function OfertasPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[var(--color-text-secondary)]">
-                Revisa oportunidades disponibles, filtra según tu perfil y postula de manera rápida y ordenada.
+                Explora oportunidades disponibles, filtra según tu perfil y postula de manera rápida en una interfaz más clara, profesional y agradable en modo claro y oscuro.
               </p>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <SmallBadge className="bg-blue-500/10 text-blue-700 ring-blue-500/20 dark:text-blue-300">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  {total} oportunidades
+                </SmallBadge>
+
+                {closingSoonCount > 0 && (
+                  <SmallBadge className="bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-300">
+                    <Flame className="h-3.5 w-3.5" />
+                    {closingSoonCount} por cerrar
+                  </SmallBadge>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:min-w-[340px]">
-              <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm">
-                <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
-                  Resultados
-                </p>
-                <p className="mt-1 text-2xl font-black text-[var(--color-text-primary)]">
-                  {total}
-                </p>
-                <p className="mt-1 text-xs font-medium text-[var(--color-text-secondary)]">
-                  ofertas encontradas
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4 shadow-sm">
-                <p className="text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)]">
-                  Vista
-                </p>
-                <p className="mt-1 flex items-center gap-2 text-sm font-black text-[var(--color-text-primary)]">
-                  <Briefcase className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-                  Profesional
-                </p>
-                <p className="mt-1 text-xs font-medium text-[var(--color-text-secondary)]">
-                  claro / oscuro
-                </p>
-              </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:min-w-[560px]">
+              <SummaryCard
+                title="Resultados"
+                value={total}
+                subtitle="ofertas encontradas"
+                accent="blue"
+              />
+              <SummaryCard
+                title="Activas"
+                value={activeCount}
+                subtitle="convocatorias abiertas"
+                accent="emerald"
+              />
+              <SummaryCard
+                title="Remoto"
+                value={remoteCount}
+                subtitle="oportunidades remotas"
+                accent="amber"
+              />
             </div>
           </div>
         </div>
@@ -345,7 +404,6 @@ export default function OfertasPage() {
               <h2 className="text-lg font-display font-black tracking-tight text-[var(--color-text-primary)]">
                 Filtros de búsqueda
               </h2>
-
               <p className="text-sm font-medium text-[var(--color-text-muted)]">
                 Busca por título, empresa, ubicación, modalidad o estado.
               </p>
@@ -373,8 +431,17 @@ export default function OfertasPage() {
                 setFilters((f) => ({ ...f, search: e.target.value }))
               }
               placeholder="Buscar por título, empresa, ubicación..."
-              className="min-h-[46px] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-3 pl-11 pr-4 text-sm font-semibold text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-muted)] focus:border-blue-400 focus:bg-[var(--color-bg-surface)] focus:ring-4 focus:ring-blue-500/10"
+              className="min-h-[46px] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-3 pl-11 pr-12 text-sm font-semibold text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-muted)] focus:border-blue-400 focus:bg-[var(--color-bg-surface)] focus:ring-4 focus:ring-blue-500/10"
             />
+
+            {filters.search && (
+              <button
+                onClick={() => setFilters((f) => ({ ...f, search: '' }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-1 text-[var(--color-text-muted)] transition hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <FilterSelect
@@ -439,9 +506,9 @@ export default function OfertasPage() {
                 key={oferta.id}
                 className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/30 hover:shadow-lg"
               >
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-600/80 via-indigo-600/70 to-slate-600/60 opacity-0 transition group-hover:opacity-100" />
+                <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_30%)]" />
 
-                <div className="mb-4 flex items-start gap-4">
+                <div className="relative mb-4 flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-lg font-display font-black text-blue-700 dark:text-blue-300">
                     {oferta.empresa?.nombreComercial?.[0] || 'E'}
                   </div>
@@ -483,7 +550,7 @@ export default function OfertasPage() {
                 </div>
 
                 <div
-                  className={`mb-4 rounded-2xl border px-4 py-3 ${deadlineStyle.className}`}
+                  className={`relative mb-4 rounded-2xl border px-4 py-3 ${deadlineStyle.className}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/50 dark:bg-white/5">
@@ -514,8 +581,7 @@ export default function OfertasPage() {
                       highlight={isClosingSoon}
                       danger={isExpired}
                     >
-                      {formatShortDate(oferta.fechaInicio)} →{' '}
-                      {formatShortDate(oferta.fechaFin)}
+                      {formatShortDate(oferta.fechaInicio)} → {formatShortDate(oferta.fechaFin)}
                     </InfoPill>
                   )}
 
@@ -555,7 +621,7 @@ export default function OfertasPage() {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative flex flex-col gap-3 border-t border-[var(--color-border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <Link
                     href={`/dashboard/ofertas/${oferta.id}`}
                     className="inline-flex items-center gap-1 text-sm font-black text-blue-700 transition hover:gap-2 dark:text-blue-300"
