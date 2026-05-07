@@ -3,31 +3,12 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { estadisticasApi } from '@/lib/api';
 import {
-  Users,
-  Building2,
-  Briefcase,
-  TrendingUp,
-  RefreshCw,
-  Activity,
-  CalendarDays,
-  ArrowUpRight,
-  BarChart3,
-  Download,
+  Users, Building2, Briefcase, TrendingUp, RefreshCw, Activity,
+  CalendarDays, ArrowUpRight, BarChart3, Download
 } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ComposedChart,
-  Line,
+  BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, ComposedChart, Line
 } from 'recharts';
 
 const COLORS = ['#2563EB', '#EF4444', '#7C3AED', '#10B981', '#F59E0B', '#EC4899'];
@@ -42,25 +23,20 @@ const tooltipStyle: CSSProperties = {
   padding: '12px 16px',
 };
 
-// Tipado
-interface DashboardKpis {
-  totalEgresados: number;
-  totalEmpresas: number;
-  ofertasActivas: number;
-  tasaEmpleabilidad: number;
-}
-
-interface DashboardGraficas {
-  ofertasPorMes: Array<{ mes: string; ofertas: number; postulaciones: number }>;
-  egresadosPorCarrera: Array<{ name: string; value: number }>;
-  topHabilidades: Array<{ name: string; value: number }>;
-  contratacionesPorCohorte: Array<{ anio: string; total: number; contratados: number }>;
-  distribucionEstados: Array<{ name: string; value: number }>;
-}
-
 interface DashboardData {
-  kpis: DashboardKpis;
-  graficas: DashboardGraficas;
+  kpis: {
+    totalEgresados: number;
+    totalEmpresas: number;
+    ofertasActivas: number;
+    tasaEmpleabilidad: number;
+  };
+  graficas: {
+    ofertasPorMes: Array<{ mes: string; ofertas: number; postulaciones: number }>;
+    egresadosPorCarrera: Array<{ name: string; value: number }>;
+    topHabilidades: Array<{ name: string; value: number }>;
+    contratacionesPorCohorte: Array<{ anio: string; total: number; contratados: number }>;
+    distribucionEstados: Array<{ name: string; value: number }>;
+  };
 }
 
 function KpiCard({ title, value, icon: Icon, color, trend, subtitle }: any) {
@@ -99,7 +75,7 @@ function ChartCard({ title, subtitle, children, loading }: any) {
         <BarChart3 className="h-5 w-5 text-[var(--color-text-muted)]" />
       </div>
       {loading ? (
-        <div className="h-80 flex items-center justify-center rounded-2xl bg-[var(--color-bg-subtle)]">
+        <div className="h-80 flex items-center justify-center">
           <RefreshCw className="h-8 w-8 animate-spin text-[var(--color-text-muted)]" />
         </div>
       ) : (
@@ -154,10 +130,10 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-4">
             {lastUpdated && <p className="text-sm text-[var(--color-text-muted)]">Actualizado: {lastUpdated.toLocaleTimeString('es-PE')}</p>}
-            <button onClick={load} disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]">
+            <button onClick={load} disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)] transition">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Actualizar
             </button>
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl">
+            <button className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl transition">
               <Download className="h-4 w-4" /> Exportar
             </button>
           </div>
@@ -174,27 +150,25 @@ export default function AdminDashboard() {
 
       {/* Gráficos principales */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Evolución mensual */}
+        {/* Evolución mensual - Versión limpia y clara */}
         <div className="lg:col-span-2">
           <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading}>
             <ResponsiveContainer width="100%" height={380}>
               <ComposedChart data={(data?.graficas?.ofertasPorMes || []).map(item => ({ ...item, _label: formatMonthLabel(item.mes) }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="_label" tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} />
-                <YAxis tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
+                <XAxis dataKey="_label" tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: 15 }} />
 
-                <Bar dataKey="ofertas" fill="#2563EB" name="Ofertas" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="postulaciones" fill="#EF4444" name="Postulaciones" radius={[4, 4, 0, 0]} />
-                <Line type="natural" dataKey="ofertas" stroke="#3B82F6" strokeWidth={3} />
-                <Line type="natural" dataKey="postulaciones" stroke="#F87171" strokeWidth={3} />
+                <Bar dataKey="ofertas" fill="#2563EB" name="Ofertas" radius={[6, 6, 0, 0]} barSize={45} />
+                <Bar dataKey="postulaciones" fill="#EF4444" name="Postulaciones" radius={[6, 6, 0, 0]} barSize={45} />
               </ComposedChart>
             </ResponsiveContainer>
           </ChartCard>
         </div>
 
-        {/* PIE CHART - CORREGIDO Y MEJORADO */}
+        {/* Pie Chart - Mejorado */}
         <ChartCard title="Distribución por carrera" subtitle="Egresados por especialidad" loading={loading}>
           <ResponsiveContainer width="100%" height={380}>
             <PieChart>
@@ -202,10 +176,10 @@ export default function AdminDashboard() {
                 data={data?.graficas?.egresadosPorCarrera || []}
                 cx="50%"
                 cy="48%"
-                innerRadius={82}
-                outerRadius={122}
-                paddingAngle={5}
-                cornerRadius={8}
+                innerRadius={85}
+                outerRadius={125}
+                paddingAngle={6}
+                cornerRadius={10}
                 dataKey="value"
                 nameKey="name"
               >
@@ -214,55 +188,37 @@ export default function AdminDashboard() {
                 ))}
               </Pie>
 
-              {/* Texto central visible en claro y oscuro */}
-              <text
-                x="50%"
-                y="46%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-5xl font-bold tracking-tighter fill-[var(--color-text-primary)]"
-              >
+              <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" className="text-5xl font-bold fill-[var(--color-text-primary)] tracking-tighter">
                 {data?.kpis?.totalEgresados || 0}
               </text>
-              <text
-                x="50%"
-                y="58%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-sm font-medium fill-[var(--color-text-muted)]"
-              >
+              <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-medium fill-[var(--color-text-muted)]">
                 TOTAL EGRESADOS
               </text>
 
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} egresados`, name]} />
-
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} egresados`]} />
               <Legend
                 layout="horizontal"
                 verticalAlign="bottom"
                 align="center"
                 iconType="circle"
-                iconSize={10}
-                wrapperStyle={{
-                  fontSize: '13px',
-                  color: 'var(--color-text-secondary)',
-                  paddingTop: '30px',
-                }}
+                iconSize={11}
+                wrapperStyle={{ fontSize: '13px', color: 'var(--color-text-secondary)', paddingTop: 30 }}
               />
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
       </section>
 
-      {/* Otros gráficos */}
+      {/* Resto de gráficos (puedes seguir mejorando) */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard title="Top habilidades demandadas" subtitle="En ofertas activas" loading={loading}>
           <ResponsiveContainer width="100%" height={340}>
             <BarChart data={data?.graficas?.topHabilidades || []} layout="vertical" margin={{ left: 30 }}>
               <CartesianGrid stroke="var(--color-border)" />
               <XAxis type="number" tick={{ fill: 'var(--color-text-muted)' }} />
-              <YAxis type="category" dataKey="name" tick={{ fill: 'var(--color-text-muted)' }} width={140} />
+              <YAxis type="category" dataKey="name" tick={{ fill: 'var(--color-text-muted)' }} width={150} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="value" fill="#2563EB" radius={[0, 12, 12, 0]} />
+              <Bar dataKey="value" fill="#2563EB" radius={[0, 12, 12, 0]} barSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -275,39 +231,14 @@ export default function AdminDashboard() {
               <YAxis tick={{ fill: 'var(--color-text-muted)' }} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend />
-              <Bar dataKey="total" fill="#E2E8F0" name="Total egresados" />
-              <Bar dataKey="contratados" fill="#2563EB" name="Contratados" />
+              <Bar dataKey="total" fill="#E2E8F0" name="Total egresados" radius={6} />
+              <Bar dataKey="contratados" fill="#2563EB" name="Contratados" radius={6} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
       </section>
 
-      {/* Estados de postulaciones */}
-      {data?.graficas?.distribucionEstados && (
-        <section className="rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-8">
-          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-6">Estado de postulaciones</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-            {data.graficas.distribucionEstados.map((d: any, i: number) => {
-              const map: any = {
-                POSTULADO: { color: '#2563EB', bg: 'rgba(37,99,235,0.08)' },
-                EN_REVISION: { color: '#D97706', bg: 'rgba(245,158,11,0.08)' },
-                ENTREVISTA: { color: '#DB2777', bg: 'rgba(236,72,153,0.08)' },
-                CONTRATADO: { color: '#059669', bg: 'rgba(16,185,129,0.08)' },
-                RECHAZADO: { color: '#DC2626', bg: 'rgba(239,68,68,0.08)' },
-              };
-              const c = map[d.name] || { color: 'var(--color-text-secondary)', bg: 'var(--color-bg-subtle)' };
-              return (
-                <div key={i} className="rounded-2xl p-6 text-center" style={{ background: c.bg }}>
-                  <p className="text-5xl font-bold" style={{ color: c.color }}>{d.value}</p>
-                  <p className="mt-2 text-sm uppercase tracking-widest" style={{ color: c.color }}>{d.name.replace('_', ' ')}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {error && <p className="text-red-500 text-center p-4">{error}</p>}
+      {error && <p className="text-red-500 text-center">{error}</p>}
     </main>
   );
 }
