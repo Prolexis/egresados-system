@@ -228,7 +228,84 @@ model Postulacion {
   @@index([egresadoId])
   @@map("postulaciones")
 }
-
 model HistorialEstadoPostulacion {
   id              String   @id @default(uuid())
-  postul
+  postulacionId   String   @map("postulacion_id")
+  estadoAnterior  String?  @map("estado_anterior")
+  estadoNuevo     String   @map("estado_nuevo")
+  motivo          String?
+  usuarioCambioId String?  @map("usuario_cambio_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  postulacion   Postulacion @relation(fields: [postulacionId], references: [id], onDelete: Cascade)
+  usuarioCambio User?       @relation(fields: [usuarioCambioId], references: [id])
+
+  @@index([postulacionId])
+  @@index([usuarioCambioId])
+  @@map("historial_estados_postulacion")
+}
+
+model Notificacion {
+  id        String   @id @default(uuid())
+  usuarioId String   @map("usuario_id")
+  tipo      String
+  titulo    String
+  contenido String
+  leida     Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([leida])
+  @@map("notificaciones")
+}
+
+model Reporte {
+  id            String        @id @default(uuid())
+  usuarioId     String        @map("usuario_id")
+  tipo          String
+  nombreArchivo String        @map("nombre_archivo")
+  urlArchivo    String?       @map("url_archivo")
+  parametros    Json?
+  estado        EstadoReporte @default(PENDIENTE)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  completedAt   DateTime?     @map("completed_at")
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([estado])
+  @@map("reportes")
+}
+
+model AuditoriaLog {
+  id           String   @id @default(uuid())
+  usuarioId    String?  @map("usuario_id")
+  accion       String
+  entidad      String
+  datosPrevios Json?    @map("datos_previos")
+  datosNuevos  Json?    @map("datos_nuevos")
+  ipAddress    String?  @map("ip_address")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  usuario User? @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([entidad])
+  @@index([accion])
+  @@map("auditoria_logs")
+}
+
+model MetricaAgregada {
+  id          String   @id @default(uuid())
+  fecha       DateTime @db.Date
+  tipoMetrica String   @map("tipo_metrica")
+  valores     Json
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([fecha, tipoMetrica])
+  @@index([tipoMetrica, fecha])
+  @@map("metricas_agregadas")
+}
