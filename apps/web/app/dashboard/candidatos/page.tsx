@@ -9,24 +9,28 @@ import {
 } from 'lucide-react';
 
 /* ─── Types ────────────────────────────────────────────────────── */
-type EstadoPostulacion = 'PENDIENTE' | 'REVISADO' | 'ENTREVISTA' | 'ACEPTADO' | 'RECHAZADO';
+type EstadoPostulacion = 'POSTULADO' | 'EN_REVISION' | 'ENTREVISTA' | 'CONTRATADO' | 'RECHAZADO';
 type Empresa    = { nombreComercial?: string; razonSocial?: string };
 type Oferta     = { id: string; titulo: string; _count?: { postulaciones?: number } };
 type Egresado   = { id?: string; nombre?: string; apellido?: string; dni?: string; carrera?: string; anioEgreso?: number; telefono?: string; user?: { email?: string } };
 type Postulacion = { id: string; estado: EstadoPostulacion | string; egresado?: Egresado; createdAt?: string; fechaPostulacion?: string };
 
 /* ─── Constants ────────────────────────────────────────────────── */
-const ESTADOS: EstadoPostulacion[] = ['PENDIENTE','REVISADO','ENTREVISTA','ACEPTADO','RECHAZADO'];
+const ESTADOS: EstadoPostulacion[] = ['POSTULADO','EN_REVISION','ENTREVISTA','CONTRATADO','RECHAZADO'];
 
 const ESTADO_LABELS: Record<EstadoPostulacion, string> = {
-  PENDIENTE:'Pendiente', REVISADO:'Revisado', ENTREVISTA:'Entrevista', ACEPTADO:'Aceptado', RECHAZADO:'Rechazado',
+  POSTULADO   : 'Postulado',
+  EN_REVISION : 'En revisión',
+  ENTREVISTA  : 'Entrevista',
+  CONTRATADO  : 'Contratado',
+  RECHAZADO   : 'Rechazado',
 };
 
 const ESTADO_STYLES: Record<EstadoPostulacion, string> = {
-  PENDIENTE:   'bg-amber-50   text-amber-700   ring-amber-200   dark:bg-amber-500/10   dark:text-amber-300   dark:ring-amber-500/20',
-  REVISADO:    'bg-blue-50    text-blue-700    ring-blue-200    dark:bg-blue-500/10    dark:text-blue-300    dark:ring-blue-500/20',
+  POSTULADO:   'bg-amber-50   text-amber-700   ring-amber-200   dark:bg-amber-500/10   dark:text-amber-300   dark:ring-amber-500/20',
+  EN_REVISION:    'bg-blue-50    text-blue-700    ring-blue-200    dark:bg-blue-500/10    dark:text-blue-300    dark:ring-blue-500/20',
   ENTREVISTA:  'bg-indigo-50  text-indigo-700  ring-indigo-200  dark:bg-indigo-500/10  dark:text-indigo-300  dark:ring-indigo-500/20',
-  ACEPTADO:    'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  CONTRATADO:    'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
   RECHAZADO:   'bg-red-50     text-red-700     ring-red-200     dark:bg-red-500/10     dark:text-red-300     dark:ring-red-500/20',
 };
 
@@ -66,7 +70,7 @@ function formatDate(value?: string) {
 }
 
 function getEstadoIcon(estado: string) {
-  if (estado === 'ACEPTADO')  return <CheckCircle className="h-3 w-3" />;
+  if (estado === 'CONTRATADO')  return <CheckCircle className="h-3 w-3" />;
   if (estado === 'RECHAZADO') return <XCircle className="h-3 w-3" />;
   return <Clock className="h-3 w-3" />;
 }
@@ -180,9 +184,9 @@ export default function CandidatosPage() {
 
   const resumen = useMemo(() => ({
     total      : postulacionesFiltradas.length,
-    pendientes : postulacionesFiltradas.filter(p => p.estado === 'PENDIENTE').length,
+    pendientes : postulacionesFiltradas.filter(p => p.estado === 'POSTULADO').length,
     entrevistas: postulacionesFiltradas.filter(p => p.estado === 'ENTREVISTA').length,
-    aceptados  : postulacionesFiltradas.filter(p => p.estado === 'ACEPTADO').length,
+    aceptados  : postulacionesFiltradas.filter(p => p.estado === 'CONTRATADO').length,
   }), [postulacionesFiltradas]);
 
   const handleCambiarEstado = async (postulacionId: string, nuevoEstado: string) => {
