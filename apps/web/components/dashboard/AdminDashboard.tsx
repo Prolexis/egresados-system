@@ -1,29 +1,30 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { estadisticasApi } from '@/lib/api';
 import {
-  Users, Building2, Briefcase, TrendingUp, RefreshCw, Activity,
-  CalendarDays, ArrowUpRight, BarChart3, Download, Sparkles, Zap
+  Users, Building2, Briefcase, TrendingUp, RefreshCw,
+  Activity, CalendarDays, ArrowUpRight, BarChart3, Download,
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, ComposedChart, Line
+  Tooltip, Legend, ResponsiveContainer, ComposedChart, Line,
 } from 'recharts';
 
-const COLORS = ['#6366F1', '#F43F5E', '#0EA5E9', '#10B981', '#F59E0B', '#EC4899'];
+/* ─── Palette ─────────────────────────────────────────────────── */
+const COLORS = ['#2563EB', '#F43F5E', '#7C3AED', '#10B981', '#F59E0B', '#EC4899'];
 
 const tooltipStyle: CSSProperties = {
-  borderRadius: '16px',
-  border: '1px solid rgba(255,255,255,0.08)',
-  backgroundColor: '#0F0F14',
-  color: '#F8FAFC',
-  boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+  borderRadius: '12px',
+  border: '1px solid var(--color-border)',
+  backgroundColor: 'var(--color-bg-surface)',
+  color: 'var(--color-text-primary)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
   fontSize: '13px',
-  padding: '12px 18px',
-  backdropFilter: 'blur(20px)',
+  padding: '10px 16px',
 };
 
+/* ─── Types ────────────────────────────────────────────────────── */
 interface DashboardData {
   kpis: {
     totalEgresados: number;
@@ -40,128 +41,103 @@ interface DashboardData {
   };
 }
 
-const GRID_LINES = 'rgba(255,255,255,0.05)';
-const AXIS_TICK = 'rgba(255,255,255,0.35)';
-
-function KpiCard({ title, value, icon: Icon, accent, trend, subtitle }: any) {
+/* ─── KPI Card ─────────────────────────────────────────────────── */
+function KpiCard({ title, value, icon: Icon, color, trend, subtitle }: any) {
   return (
     <article
+      className="kpi-card"
       style={{
         position: 'relative',
         overflow: 'hidden',
-        borderRadius: '24px',
-        border: `1px solid ${accent}22`,
-        background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
-        padding: '28px',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        cursor: 'default',
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 24px 60px ${accent}22`;
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+        borderRadius: '14px',
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-bg-surface)',
+        padding: '22px',
+        transition: 'box-shadow 0.2s, transform 0.2s',
       }}
     >
-      {/* Ambient glow */}
       <div style={{
-        position: 'absolute', top: -40, right: -40,
-        width: 120, height: 120, borderRadius: '50%',
-        background: accent, opacity: 0.08, filter: 'blur(30px)',
-        pointerEvents: 'none',
-      }} />
-      {/* Top stripe */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-        background: `linear-gradient(90deg, transparent, ${accent}66, transparent)`,
+        position: 'absolute', top: 0, left: 0, bottom: 0, width: 3,
+        borderRadius: '14px 0 0 14px',
+        background: color,
+        opacity: 0.75,
       }} />
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
         <div style={{
-          width: 48, height: 48, borderRadius: 16,
-          background: `${accent}18`,
-          border: `1px solid ${accent}30`,
+          width: 38, height: 38, borderRadius: 10,
+          background: `${color}12`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Icon size={22} color={accent} />
+          <Icon size={17} color={color} />
         </div>
         {trend && (
           <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            padding: '4px 12px', borderRadius: 999,
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            padding: '3px 9px', borderRadius: 999,
             background: 'rgba(16,185,129,0.1)', color: '#10B981',
-            fontSize: 12, fontWeight: 600,
-            border: '1px solid rgba(16,185,129,0.2)',
+            fontSize: 11, fontWeight: 600,
           }}>
-            <ArrowUpRight size={13} />{trend}
+            <ArrowUpRight size={11} />{trend}
           </span>
         )}
       </div>
 
-      <div>
-        <div style={{
-          fontSize: 40, fontWeight: 700, letterSpacing: '-2px',
-          color: '#F8FAFC', lineHeight: 1, marginBottom: 8,
-          fontFamily: "'Syne', sans-serif",
-        }}>
-          {value ?? (
-            <div style={{
-              height: 40, width: 120,
-              background: 'rgba(255,255,255,0.06)',
-              borderRadius: 10, animation: 'pulse 1.5s infinite',
-            }} />
-          )}
-        </div>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>{title}</p>
-        {subtitle && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>{subtitle}</p>}
+      <div style={{
+        fontSize: 32, fontWeight: 700, letterSpacing: '-1.2px',
+        color: 'var(--color-text-primary)', lineHeight: 1, marginBottom: 6,
+      }}>
+        {value ?? (
+          <div style={{
+            height: 32, width: 90,
+            background: 'var(--color-bg-subtle)',
+            borderRadius: 7, opacity: 0.5,
+          }} />
+        )}
       </div>
+      <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 1 }}>{title}</p>
+      {subtitle && <p style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{subtitle}</p>}
     </article>
   );
 }
 
-function ChartCard({ title, subtitle, children, loading, accent = '#6366F1' }: any) {
+/* ─── Chart Card ───────────────────────────────────────────────── */
+function ChartCard({ title, subtitle, children, loading }: any) {
   return (
     <section style={{
-      borderRadius: 24,
-      border: '1px solid rgba(255,255,255,0.06)',
-      background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
-      padding: 28,
+      borderRadius: '14px',
+      border: '1px solid var(--color-border)',
+      background: 'var(--color-bg-surface)',
+      padding: '22px',
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
           <h3 style={{
-            fontSize: 16, fontWeight: 700,
-            color: '#F8FAFC', letterSpacing: '-0.3px',
-            marginBottom: 4,
-            fontFamily: "'Syne', sans-serif",
+            fontSize: 14, fontWeight: 600,
+            color: 'var(--color-text-primary)',
+            letterSpacing: '-0.2px', marginBottom: 2,
           }}>{title}</h3>
-          {subtitle && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{subtitle}</p>}
+          {subtitle && <p style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{subtitle}</p>}
         </div>
-        <div style={{
-          width: 36, height: 36, borderRadius: 12,
-          background: `${accent}15`, border: `1px solid ${accent}25`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <BarChart3 size={16} color={accent} />
-        </div>
+        <BarChart3 size={15} color="var(--color-text-muted)" />
       </div>
       {loading ? (
-        <div style={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <RefreshCw size={28} color="rgba(255,255,255,0.2)" style={{ animation: 'spin 1s linear infinite' }} />
+        <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <RefreshCw size={20} color="var(--color-text-muted)" style={{ animation: 'spin 1s linear infinite' }} />
         </div>
       ) : children}
     </section>
   );
 }
 
+/* ─── Helpers ──────────────────────────────────────────────────── */
 const formatMonthLabel = (raw: string) => {
   if (!raw) return '';
   if (/^\d{4}-\d{2}/.test(raw)) return new Date(raw).toLocaleString('es-PE', { month: 'short' });
   return raw.split(' ')[0];
 };
 
+/* ─── Dashboard ────────────────────────────────────────────────── */
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,7 +160,7 @@ export default function AdminDashboard() {
   };
 
   const handleExport = () => {
-    if (!data) return alert("No hay datos para exportar");
+    if (!data) return alert('No hay datos para exportar');
     const exportData = { ...data, exportadoEn: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -193,351 +169,283 @@ export default function AdminDashboard() {
     link.download = `dashboard-egresados-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    alert("✅ Reporte exportado correctamente");
+    alert('✅ Reporte exportado correctamente');
   };
 
   useEffect(() => { load(); }, []);
 
+  const axisColor = 'var(--color-text-muted)';
+  const gridColor = 'var(--color-border)';
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap');
-        @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
-        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        .dash-section { animation: fadeUp 0.5s ease both; }
-        .dash-section:nth-child(1){animation-delay:.05s}
-        .dash-section:nth-child(2){animation-delay:.12s}
-        .dash-section:nth-child(3){animation-delay:.2s}
-        .dash-section:nth-child(4){animation-delay:.28s}
-        .dash-section:nth-child(5){animation-delay:.36s}
-        .dash-section:nth-child(6){animation-delay:.44s}
-        .btn-secondary:hover{background:rgba(255,255,255,0.06)!important}
-        .btn-primary:hover{background:#4F46E5!important}
-        .status-card:hover{transform:scale(1.04)!important}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+        .dash-row { animation: fadeUp 0.35s ease both; }
+        .dash-row:nth-child(2) { animation-delay: .06s }
+        .dash-row:nth-child(3) { animation-delay: .12s }
+        .dash-row:nth-child(4) { animation-delay: .18s }
+        .dash-row:nth-child(5) { animation-delay: .24s }
+        .dash-row:nth-child(6) { animation-delay: .30s }
+        .status-pill:hover { opacity: .85; }
       `}</style>
 
-      <main style={{
-        background: '#08080F',
-        minHeight: '100vh',
-        padding: '32px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 20,
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}>
+      <main style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* ── HERO ── */}
-        <section className="dash-section" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 28,
-          border: '1px solid rgba(99,102,241,0.2)',
-          background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
-          padding: '40px 44px',
+        {/* ── Hero ─────────────────────────────────────────────── */}
+        <section className="dash-row" style={{
+          borderRadius: '14px',
+          border: '1px solid var(--color-border)',
+          background: 'var(--color-bg-surface)',
+          padding: '24px 28px',
         }}>
-          {/* decorative grid */}
-          <div style={{
-            position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none',
-            backgroundImage: 'linear-gradient(rgba(99,102,241,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.5) 1px, transparent 1px)',
-            backgroundSize: '40px 40px',
-          }} />
-          {/* gradient orb */}
-          <div style={{
-            position: 'absolute', top: -80, right: -80,
-            width: 300, height: 300, borderRadius: '50%',
-            background: 'radial-gradient(circle, #6366F144 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: -60, left: 200,
-            width: 200, height: 200, borderRadius: '50%',
-            background: 'radial-gradient(circle, #F43F5E22 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <div>
               <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '6px 16px', borderRadius: 999,
-                border: '1px solid rgba(99,102,241,0.35)',
-                background: 'rgba(99,102,241,0.1)',
-                marginBottom: 20,
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '3px 11px', borderRadius: 999,
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-bg-subtle)',
+                marginBottom: 12,
               }}>
-                <Zap size={13} color="#6366F1" />
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#6366F1', textTransform: 'uppercase' }}>
-                  Panel Institucional
-                </span>
+                <Activity size={11} color="#10B981" />
+                <span style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+                  textTransform: 'uppercase', color: 'var(--color-text-muted)',
+                }}>Panel Institucional</span>
               </div>
 
               <h1 style={{
-                fontSize: 44, fontWeight: 800, letterSpacing: '-2px',
-                color: '#F8FAFC', lineHeight: 1.05, marginBottom: 12,
-                fontFamily: "'Syne', sans-serif",
+                fontSize: 26, fontWeight: 700, letterSpacing: '-0.6px',
+                color: 'var(--color-text-primary)', marginBottom: 5, lineHeight: 1.1,
               }}>
-                Dashboard{' '}
-                <span style={{
-                  background: 'linear-gradient(135deg, #6366F1, #F43F5E)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                }}>
-                  Administrativo
-                </span>
+                Dashboard Administrativo
               </h1>
-              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.01em' }}>
+              <p style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>
                 Vista ejecutiva del sistema de egresados y empleabilidad
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {lastUpdated && (
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
-                  Actualizado: {lastUpdated.toLocaleTimeString('es-PE')}
+                <p style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                  {lastUpdated.toLocaleTimeString('es-PE')}
                 </p>
               )}
               <button
-                className="btn-secondary"
                 onClick={load}
                 disabled={loading}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 22px', borderRadius: 14,
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'rgba(255,255,255,0.04)',
-                  color: 'rgba(255,255,255,0.7)',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: 9,
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-bg-subtle)',
+                  color: 'var(--color-text-secondary)',
                   fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                  transition: 'background 0.2s',
+                  transition: 'opacity .15s',
                 }}
               >
-                <RefreshCw size={15} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
+                <RefreshCw size={13} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
                 Actualizar
               </button>
               <button
-                className="btn-primary"
                 onClick={handleExport}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 22px', borderRadius: 14,
-                  border: '1px solid rgba(99,102,241,0.4)',
-                  background: '#6366F1',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', borderRadius: 9,
+                  border: '1px solid #1d4ed8',
+                  background: '#2563EB',
                   color: '#fff',
                   fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  transition: 'background 0.2s',
-                  boxShadow: '0 8px 32px rgba(99,102,241,0.35)',
+                  transition: 'background .15s',
                 }}
               >
-                <Download size={15} />
+                <Download size={13} />
                 Exportar Reporte
               </button>
             </div>
           </div>
         </section>
 
-        {/* ── KPIs ── */}
-        <section className="dash-section" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 16,
-        }}>
-          <KpiCard title="Total egresados" subtitle="Registrados en plataforma" value={data?.kpis?.totalEgresados} icon={Users} accent="#6366F1" trend="+12%" />
-          <KpiCard title="Empresas registradas" subtitle="Aliados empleadores" value={data?.kpis?.totalEmpresas} icon={Building2} accent="#0EA5E9" trend="+8%" />
-          <KpiCard title="Ofertas activas" subtitle="Vacantes disponibles" value={data?.kpis?.ofertasActivas} icon={Briefcase} accent="#F43F5E" trend="+5%" />
-          <KpiCard title="Tasa de empleabilidad" subtitle="Indicador global" value={data ? `${data.kpis.tasaEmpleabilidad}%` : null} icon={TrendingUp} accent="#10B981" trend="+3%" />
+        {/* ── KPIs ─────────────────────────────────────────────── */}
+        <section
+          className="dash-row"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}
+        >
+          <KpiCard title="Total egresados"       subtitle="Registrados en plataforma" value={data?.kpis?.totalEgresados}                       icon={Users}      color="#2563EB" trend="+12%" />
+          <KpiCard title="Empresas registradas"  subtitle="Aliados empleadores"        value={data?.kpis?.totalEmpresas}                        icon={Building2}  color="#7C3AED" trend="+8%"  />
+          <KpiCard title="Ofertas activas"       subtitle="Vacantes disponibles"       value={data?.kpis?.ofertasActivas}                       icon={Briefcase}  color="#F43F5E" trend="+5%"  />
+          <KpiCard title="Tasa de empleabilidad" subtitle="Indicador global"           value={data ? `${data.kpis.tasaEmpleabilidad}%` : null}  icon={TrendingUp} color="#10B981" trend="+3%"  />
         </section>
 
-        {/* ── MAIN CHARTS ── */}
-        <section className="dash-section" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
-          <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading} accent="#6366F1">
-            <ResponsiveContainer width="100%" height={360}>
-              <ComposedChart data={(data?.graficas?.ofertasPorMes || []).map(item => ({ ...item, _label: formatMonthLabel(item.mes) }))}>
-                <defs>
-                  <linearGradient id="ofertasGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366F1" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#6366F1" stopOpacity={0.6} />
-                  </linearGradient>
-                  <linearGradient id="postGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#F43F5E" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#F43F5E" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={GRID_LINES} vertical={false} />
-                <XAxis dataKey="_label" tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Legend
-                  wrapperStyle={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', paddingTop: 16 }}
-                  iconType="circle"
-                />
-                <Bar dataKey="ofertas" fill="url(#ofertasGrad)" name="Ofertas" radius={[8, 8, 0, 0]} barSize={36} />
-                <Bar dataKey="postulaciones" fill="url(#postGrad)" name="Postulaciones" radius={[8, 8, 0, 0]} barSize={36} />
+        {/* ── Main charts ──────────────────────────────────────── */}
+        <section className="dash-row" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 12 }}>
+
+          <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading}>
+            <ResponsiveContainer width="100%" height={330}>
+              <ComposedChart
+                data={(data?.graficas?.ofertasPorMes || []).map(item => ({
+                  ...item, _label: formatMonthLabel(item.mes),
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                <XAxis dataKey="_label" tick={{ fill: axisColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: axisColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--color-bg-subtle)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, color: 'var(--color-text-muted)', paddingTop: 12 }} iconType="circle" />
+                <Bar dataKey="ofertas"       fill="#2563EB" name="Ofertas"       radius={[5,5,0,0]} barSize={32} opacity={0.88} />
+                <Bar dataKey="postulaciones" fill="#F43F5E" name="Postulaciones" radius={[5,5,0,0]} barSize={32} opacity={0.88} />
               </ComposedChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          <ChartCard title="Por carrera" subtitle="Egresados por especialidad" loading={loading} accent="#F59E0B">
-            <ResponsiveContainer width="100%" height={360}>
+          <ChartCard title="Distribución por carrera" subtitle="Egresados por especialidad" loading={loading}>
+            <ResponsiveContainer width="100%" height={330}>
               <PieChart>
                 <Pie
                   data={data?.graficas?.egresadosPorCarrera || []}
-                  cx="50%"
-                  cy="46%"
-                  innerRadius={90}
-                  outerRadius={130}
-                  paddingAngle={5}
-                  cornerRadius={8}
-                  dataKey="value"
-                  nameKey="name"
+                  cx="50%" cy="44%"
+                  innerRadius={78} outerRadius={112}
+                  paddingAngle={4} cornerRadius={5}
+                  dataKey="value" nameKey="name"
                 >
                   {(data?.graficas?.egresadosPorCarrera || []).map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="transparent" />
                   ))}
                 </Pie>
-                <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle"
-                  style={{ fontSize: 36, fontWeight: 800, fill: '#F8FAFC', fontFamily: 'Syne, sans-serif', letterSpacing: '-2px' }}>
+
+                <text x="50%" y="40%" textAnchor="middle" dominantBaseline="middle"
+                  fill="var(--color-text-primary)"
+                  style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-1px' }}>
                   {data?.kpis?.totalEgresados || 0}
                 </text>
-                <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle"
-                  style={{ fontSize: 10, fill: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: '0.1em' }}>
-                  TOTAL
+                <text x="50%" y="53%" textAnchor="middle" dominantBaseline="middle"
+                  fill="var(--color-text-muted)"
+                  style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.09em' }}>
+                  TOTAL EGRESADOS
                 </text>
-                <Tooltip contentStyle={tooltipStyle}
-                  formatter={(value: number, name: string) => [`${value} egresados`, name]} />
+
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(value: number, name: string) => [`${value} egresados`, name]}
+                />
                 <Legend
                   layout="horizontal" verticalAlign="bottom" align="center"
-                  iconType="circle" iconSize={9}
-                  wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', paddingTop: 20, lineHeight: 2 }}
+                  iconType="circle" iconSize={8}
+                  wrapperStyle={{ fontSize: 11, color: 'var(--color-text-muted)', paddingTop: 16, lineHeight: 1.8 }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </ChartCard>
         </section>
 
-        {/* ── SECONDARY CHARTS ── */}
-        <section className="dash-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año" loading={loading} accent="#10B981">
-            <ResponsiveContainer width="100%" height={320}>
+        {/* ── Secondary charts ─────────────────────────────────── */}
+        <section className="dash-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+
+          <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año" loading={loading}>
+            <ResponsiveContainer width="100%" height={290}>
               <ComposedChart data={data?.graficas?.contratacionesPorCohorte || []}>
-                <defs>
-                  <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
-                    <stop offset="100%" stopColor="rgba(255,255,255,0.03)" />
-                  </linearGradient>
-                  <linearGradient id="contratGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" />
-                    <stop offset="100%" stopColor="#10B98188" />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={GRID_LINES} vertical={false} />
-                <XAxis dataKey="anio" tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-                <Legend wrapperStyle={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', paddingTop: 16 }} iconType="circle" />
-                <Bar dataKey="total" fill="url(#totalGrad)" name="Total egresados" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="contratados" fill="url(#contratGrad)" name="Contratados" radius={[6, 6, 0, 0]} />
-                <Line type="natural" dataKey="contratados" stroke="#10B981" strokeWidth={3}
-                  dot={{ r: 5, fill: '#10B981', strokeWidth: 2, stroke: '#08080F' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                <XAxis dataKey="anio" tick={{ fill: axisColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: axisColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--color-bg-subtle)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, color: 'var(--color-text-muted)', paddingTop: 12 }} iconType="circle" />
+                <Bar dataKey="total"       fill="var(--color-bg-subtle)" name="Total egresados"
+                  radius={[4,4,0,0]} stroke="var(--color-border)" strokeWidth={1} />
+                <Bar dataKey="contratados" fill="#10B981"                name="Contratados"
+                  radius={[4,4,0,0]} opacity={0.9} />
+                <Line type="natural" dataKey="contratados" stroke="#10B981" strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#10B981', stroke: 'var(--color-bg-surface)', strokeWidth: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          <ChartCard title="Top habilidades demandadas" subtitle="Las más solicitadas en ofertas" loading={loading} accent="#0EA5E9">
-            <ResponsiveContainer width="100%" height={320}>
+          <ChartCard title="Top habilidades demandadas" subtitle="Más solicitadas en ofertas" loading={loading}>
+            <ResponsiveContainer width="100%" height={290}>
               <BarChart
                 data={data?.graficas?.topHabilidades?.slice(0, 8) || []}
                 layout="vertical"
                 margin={{ left: 16 }}
               >
-                <defs>
-                  <linearGradient id="skillGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#0EA5E9" />
-                    <stop offset="100%" stopColor="#6366F1" />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke={GRID_LINES} horizontal={false} />
-                <XAxis type="number" tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name"
-                  tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
-                  width={150} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-                <Bar dataKey="value" fill="url(#skillGrad)" radius={[0, 10, 10, 0]} barSize={26} />
+                <CartesianGrid stroke={gridColor} horizontal={false} />
+                <XAxis type="number" tick={{ fill: axisColor, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis
+                  type="category" dataKey="name"
+                  tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }}
+                  width={148} axisLine={false} tickLine={false}
+                />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--color-bg-subtle)' }} />
+                <Bar dataKey="value" fill="#2563EB" radius={[0, 6, 6, 0]} barSize={22} opacity={0.85} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
         </section>
 
-        {/* ── ESTADOS ── */}
+        {/* ── Estado de postulaciones ───────────────────────────── */}
         {data?.graficas?.distribucionEstados && (
-          <section className="dash-section" style={{
-            borderRadius: 24,
-            border: '1px solid rgba(255,255,255,0.06)',
-            background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
-            padding: '32px 36px',
+          <section className="dash-row" style={{
+            borderRadius: '14px',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-bg-surface)',
+            padding: '22px 24px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
               <div style={{
-                width: 44, height: 44, borderRadius: 14,
-                background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)',
+                width: 36, height: 36, borderRadius: 9,
+                background: 'rgba(37,99,235,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <CalendarDays size={20} color="#6366F1" />
+                <CalendarDays size={16} color="#2563EB" />
               </div>
               <div>
-                <h3 style={{
-                  fontSize: 17, fontWeight: 700, color: '#F8FAFC',
-                  letterSpacing: '-0.3px', marginBottom: 2,
-                  fontFamily: "'Syne', sans-serif",
-                }}>Estado de postulaciones</h3>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Distribución actual del proceso de selección</p>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                  Estado de postulaciones
+                </h3>
+                <p style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                  Distribución actual del proceso
+                </p>
               </div>
             </div>
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-              gap: 14,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+              gap: 10,
             }}>
               {data.graficas.distribucionEstados.map((d: any, i: number) => {
-                const stateConfig: Record<string, { accent: string; bg: string; label: string }> = {
-                  POSTULADO:   { accent: '#6366F1', bg: 'rgba(99,102,241,0.08)', label: 'Postulado' },
-                  EN_REVISION: { accent: '#F59E0B', bg: 'rgba(245,158,11,0.08)', label: 'En revisión' },
-                  ENTREVISTA:  { accent: '#EC4899', bg: 'rgba(236,72,153,0.08)', label: 'Entrevista' },
-                  CONTRATADO:  { accent: '#10B981', bg: 'rgba(16,185,129,0.08)', label: 'Contratado' },
-                  RECHAZADO:   { accent: '#F43F5E', bg: 'rgba(244,63,94,0.08)', label: 'Rechazado' },
+                const STATE: Record<string, { color: string; label: string }> = {
+                  POSTULADO:   { color: '#2563EB', label: 'Postulado'   },
+                  EN_REVISION: { color: '#D97706', label: 'En revisión' },
+                  ENTREVISTA:  { color: '#DB2777', label: 'Entrevista'  },
+                  CONTRATADO:  { color: '#059669', label: 'Contratado'  },
+                  RECHAZADO:   { color: '#DC2626', label: 'Rechazado'   },
                 };
-                const cfg = stateConfig[d.name] || { accent: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', label: d.name };
+                const s = STATE[d.name] || { color: 'var(--color-text-secondary)', label: d.name.replace('_', ' ') };
 
                 return (
-                  <div
-                    key={i}
-                    className="status-card"
-                    style={{
-                      borderRadius: 20,
-                      border: `1px solid ${cfg.accent}20`,
-                      background: cfg.bg,
-                      padding: '24px 20px',
-                      textAlign: 'center',
-                      transition: 'transform 0.2s ease',
-                      cursor: 'default',
-                    }}
-                  >
+                  <div key={i} style={{
+                    borderRadius: 10,
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg-subtle)',
+                    padding: '16px 14px',
+                    textAlign: 'center',
+                  }}>
                     <p style={{
-                      fontSize: 48, fontWeight: 800, lineHeight: 1,
-                      color: cfg.accent, marginBottom: 10,
-                      fontFamily: "'Syne', sans-serif", letterSpacing: '-2px',
+                      fontSize: 34, fontWeight: 700, lineHeight: 1,
+                      color: s.color, letterSpacing: '-1px', marginBottom: 7,
                     }}>{d.value}</p>
-                    <div style={{
+                    <span style={{
                       display: 'inline-block',
-                      padding: '4px 12px', borderRadius: 999,
-                      background: `${cfg.accent}18`, border: `1px solid ${cfg.accent}30`,
+                      padding: '2px 9px', borderRadius: 999,
+                      background: `${s.color}12`,
+                      fontSize: 10, fontWeight: 600,
+                      letterSpacing: '0.06em', textTransform: 'uppercase',
+                      color: s.color,
                     }}>
-                      <p style={{
-                        fontSize: 11, fontWeight: 700,
-                        letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: cfg.accent,
-                      }}>
-                        {cfg.label}
-                      </p>
-                    </div>
+                      {s.label}
+                    </span>
                   </div>
                 );
               })}
@@ -547,10 +455,12 @@ export default function AdminDashboard() {
 
         {error && (
           <p style={{
-            textAlign: 'center', padding: '24px',
-            color: '#F43F5E', background: 'rgba(244,63,94,0.08)',
-            borderRadius: 16, border: '1px solid rgba(244,63,94,0.2)',
-          }}>{error}</p>
+            textAlign: 'center', padding: 18, borderRadius: 10,
+            color: '#DC2626', background: 'rgba(220,38,38,0.06)',
+            border: '1px solid rgba(220,38,38,0.14)', fontSize: 13,
+          }}>
+            {error}
+          </p>
         )}
       </main>
     </>
