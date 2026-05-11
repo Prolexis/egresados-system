@@ -4,23 +4,24 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { estadisticasApi } from '@/lib/api';
 import {
   Users, Building2, Briefcase, TrendingUp, RefreshCw, Activity,
-  CalendarDays, ArrowUpRight, BarChart3, Download
+  CalendarDays, ArrowUpRight, BarChart3, Download, Sparkles, Zap
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ComposedChart, Line
 } from 'recharts';
 
-const COLORS = ['#2563EB', '#EF4444', '#7C3AED', '#10B981', '#F59E0B', '#EC4899'];
+const COLORS = ['#6366F1', '#F43F5E', '#0EA5E9', '#10B981', '#F59E0B', '#EC4899'];
 
 const tooltipStyle: CSSProperties = {
-  borderRadius: '14px',
-  border: '1px solid var(--color-border)',
-  backgroundColor: 'var(--color-bg-surface)',
-  color: 'var(--color-text-primary)',
-  boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-  fontSize: '14px',
-  padding: '12px 16px',
+  borderRadius: '16px',
+  border: '1px solid rgba(255,255,255,0.08)',
+  backgroundColor: '#0F0F14',
+  color: '#F8FAFC',
+  boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+  fontSize: '13px',
+  padding: '12px 18px',
+  backdropFilter: 'blur(20px)',
 };
 
 interface DashboardData {
@@ -39,48 +40,118 @@ interface DashboardData {
   };
 }
 
-function KpiCard({ title, value, icon: Icon, color, trend, subtitle }: any) {
+const GRID_LINES = 'rgba(255,255,255,0.05)';
+const AXIS_TICK = 'rgba(255,255,255,0.35)';
+
+function KpiCard({ title, value, icon: Icon, accent, trend, subtitle }: any) {
   return (
-    <article className="group relative overflow-hidden rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-6 transition-all hover:-translate-y-1 hover:shadow-xl">
-      <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-10 blur-3xl" style={{ background: color }} />
-      <div className="relative flex items-start justify-between">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: `${color}15` }}>
-          <Icon className="h-6 w-6" style={{ color }} />
+    <article
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: '24px',
+        border: `1px solid ${accent}22`,
+        background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
+        padding: '28px',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+        cursor: 'default',
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+        (e.currentTarget as HTMLElement).style.boxShadow = `0 24px 60px ${accent}22`;
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+      }}
+    >
+      {/* Ambient glow */}
+      <div style={{
+        position: 'absolute', top: -40, right: -40,
+        width: 120, height: 120, borderRadius: '50%',
+        background: accent, opacity: 0.08, filter: 'blur(30px)',
+        pointerEvents: 'none',
+      }} />
+      {/* Top stripe */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, transparent, ${accent}66, transparent)`,
+      }} />
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 16,
+          background: `${accent}18`,
+          border: `1px solid ${accent}30`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon size={22} color={accent} />
         </div>
         {trend && (
-          <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
-            <ArrowUpRight className="h-3.5 w-3.5" />{trend}
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            padding: '4px 12px', borderRadius: 999,
+            background: 'rgba(16,185,129,0.1)', color: '#10B981',
+            fontSize: 12, fontWeight: 600,
+            border: '1px solid rgba(16,185,129,0.2)',
+          }}>
+            <ArrowUpRight size={13} />{trend}
           </span>
         )}
       </div>
-      <div className="mt-6">
-        <div className="text-4xl font-semibold tracking-tighter text-[var(--color-text-primary)]">
-          {value ?? <div className="h-10 w-28 animate-pulse rounded-xl bg-[var(--color-bg-subtle)]" />}
+
+      <div>
+        <div style={{
+          fontSize: 40, fontWeight: 700, letterSpacing: '-2px',
+          color: '#F8FAFC', lineHeight: 1, marginBottom: 8,
+          fontFamily: "'Syne', sans-serif",
+        }}>
+          {value ?? (
+            <div style={{
+              height: 40, width: 120,
+              background: 'rgba(255,255,255,0.06)',
+              borderRadius: 10, animation: 'pulse 1.5s infinite',
+            }} />
+          )}
         </div>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{title}</p>
-        {subtitle && <p className="text-xs text-[var(--color-text-muted)]">{subtitle}</p>}
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>{title}</p>
+        {subtitle && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>{subtitle}</p>}
       </div>
     </article>
   );
 }
 
-function ChartCard({ title, subtitle, children, loading }: any) {
+function ChartCard({ title, subtitle, children, loading, accent = '#6366F1' }: any) {
   return (
-    <section className="rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <section style={{
+      borderRadius: 24,
+      border: '1px solid rgba(255,255,255,0.06)',
+      background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
+      padding: 28,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{title}</h3>
-          {subtitle && <p className="text-sm text-[var(--color-text-muted)]">{subtitle}</p>}
+          <h3 style={{
+            fontSize: 16, fontWeight: 700,
+            color: '#F8FAFC', letterSpacing: '-0.3px',
+            marginBottom: 4,
+            fontFamily: "'Syne', sans-serif",
+          }}>{title}</h3>
+          {subtitle && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{subtitle}</p>}
         </div>
-        <BarChart3 className="h-5 w-5 text-[var(--color-text-muted)]" />
+        <div style={{
+          width: 36, height: 36, borderRadius: 12,
+          background: `${accent}15`, border: `1px solid ${accent}25`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <BarChart3 size={16} color={accent} />
+        </div>
       </div>
       {loading ? (
-        <div className="h-80 flex items-center justify-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-[var(--color-text-muted)]" />
+        <div style={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <RefreshCw size={28} color="rgba(255,255,255,0.2)" style={{ animation: 'spin 1s linear infinite' }} />
         </div>
-      ) : (
-        children
-      )}
+      ) : children}
     </section>
   );
 }
@@ -119,7 +190,7 @@ export default function AdminDashboard() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `dashboard-egresados-${new Date().toISOString().slice(0,10)}.json`;
+    link.download = `dashboard-egresados-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
     alert("✅ Reporte exportado correctamente");
@@ -128,185 +199,360 @@ export default function AdminDashboard() {
   useEffect(() => { load(); }, []);
 
   return (
-    <main className="space-y-6">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-8">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 bg-blue-500/5 rounded-full blur-3xl" />
-        <div className="flex flex-wrap justify-between items-start gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] text-xs uppercase tracking-widest mb-4">
-              <Activity className="h-4 w-4 text-[#10B981]" /> PANEL INSTITUCIONAL
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap');
+        @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .dash-section { animation: fadeUp 0.5s ease both; }
+        .dash-section:nth-child(1){animation-delay:.05s}
+        .dash-section:nth-child(2){animation-delay:.12s}
+        .dash-section:nth-child(3){animation-delay:.2s}
+        .dash-section:nth-child(4){animation-delay:.28s}
+        .dash-section:nth-child(5){animation-delay:.36s}
+        .dash-section:nth-child(6){animation-delay:.44s}
+        .btn-secondary:hover{background:rgba(255,255,255,0.06)!important}
+        .btn-primary:hover{background:#4F46E5!important}
+        .status-card:hover{transform:scale(1.04)!important}
+      `}</style>
+
+      <main style={{
+        background: '#08080F',
+        minHeight: '100vh',
+        padding: '32px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 20,
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}>
+
+        {/* ── HERO ── */}
+        <section className="dash-section" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 28,
+          border: '1px solid rgba(99,102,241,0.2)',
+          background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
+          padding: '40px 44px',
+        }}>
+          {/* decorative grid */}
+          <div style={{
+            position: 'absolute', inset: 0, opacity: 0.06, pointerEvents: 'none',
+            backgroundImage: 'linear-gradient(rgba(99,102,241,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.5) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }} />
+          {/* gradient orb */}
+          <div style={{
+            position: 'absolute', top: -80, right: -80,
+            width: 300, height: 300, borderRadius: '50%',
+            background: 'radial-gradient(circle, #6366F144 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: -60, left: 200,
+            width: 200, height: 200, borderRadius: '50%',
+            background: 'radial-gradient(circle, #F43F5E22 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+
+          <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+            <div>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '6px 16px', borderRadius: 999,
+                border: '1px solid rgba(99,102,241,0.35)',
+                background: 'rgba(99,102,241,0.1)',
+                marginBottom: 20,
+              }}>
+                <Zap size={13} color="#6366F1" />
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#6366F1', textTransform: 'uppercase' }}>
+                  Panel Institucional
+                </span>
+              </div>
+
+              <h1 style={{
+                fontSize: 44, fontWeight: 800, letterSpacing: '-2px',
+                color: '#F8FAFC', lineHeight: 1.05, marginBottom: 12,
+                fontFamily: "'Syne', sans-serif",
+              }}>
+                Dashboard{' '}
+                <span style={{
+                  background: 'linear-gradient(135deg, #6366F1, #F43F5E)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>
+                  Administrativo
+                </span>
+              </h1>
+              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.01em' }}>
+                Vista ejecutiva del sistema de egresados y empleabilidad
+              </p>
             </div>
-            <h1 className="text-4xl font-semibold tracking-tighter text-[var(--color-text-primary)]">Dashboard Administrativo</h1>
-            <p className="mt-3 text-[var(--color-text-secondary)]">Vista ejecutiva del sistema de egresados y empleabilidad</p>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {lastUpdated && (
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
+                  Actualizado: {lastUpdated.toLocaleTimeString('es-PE')}
+                </p>
+              )}
+              <button
+                className="btn-secondary"
+                onClick={load}
+                disabled={loading}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 22px', borderRadius: 14,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.04)',
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}
+              >
+                <RefreshCw size={15} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
+                Actualizar
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleExport}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 22px', borderRadius: 14,
+                  border: '1px solid rgba(99,102,241,0.4)',
+                  background: '#6366F1',
+                  color: '#fff',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  transition: 'background 0.2s',
+                  boxShadow: '0 8px 32px rgba(99,102,241,0.35)',
+                }}
+              >
+                <Download size={15} />
+                Exportar Reporte
+              </button>
+            </div>
           </div>
+        </section>
 
-          <div className="flex items-center gap-4">
-            {lastUpdated && <p className="text-sm text-[var(--color-text-muted)]">Actualizado: {lastUpdated.toLocaleTimeString('es-PE')}</p>}
-            <button onClick={load} disabled={loading} className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[var(--color-border)] hover:bg-[var(--color-bg-subtle)]">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Actualizar
-            </button>
-            <button onClick={handleExport} className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-[#1e40a8] text-white rounded-2xl transition">
-              <Download className="h-4 w-4" /> Exportar Reporte
-            </button>
-          </div>
-        </div>
-      </section>
+        {/* ── KPIs ── */}
+        <section className="dash-section" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 16,
+        }}>
+          <KpiCard title="Total egresados" subtitle="Registrados en plataforma" value={data?.kpis?.totalEgresados} icon={Users} accent="#6366F1" trend="+12%" />
+          <KpiCard title="Empresas registradas" subtitle="Aliados empleadores" value={data?.kpis?.totalEmpresas} icon={Building2} accent="#0EA5E9" trend="+8%" />
+          <KpiCard title="Ofertas activas" subtitle="Vacantes disponibles" value={data?.kpis?.ofertasActivas} icon={Briefcase} accent="#F43F5E" trend="+5%" />
+          <KpiCard title="Tasa de empleabilidad" subtitle="Indicador global" value={data ? `${data.kpis.tasaEmpleabilidad}%` : null} icon={TrendingUp} accent="#10B981" trend="+3%" />
+        </section>
 
-      {/* KPIs */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <KpiCard title="Total egresados" subtitle="Registrados en plataforma" value={data?.kpis?.totalEgresados} icon={Users} color="#2563EB" trend="+12%" />
-        <KpiCard title="Empresas registradas" subtitle="Aliados empleadores" value={data?.kpis?.totalEmpresas} icon={Building2} color="#7C3AED" trend="+8%" />
-        <KpiCard title="Ofertas activas" subtitle="Vacantes disponibles" value={data?.kpis?.ofertasActivas} icon={Briefcase} color="#EF4444" trend="+5%" />
-        <KpiCard title="Tasa de empleabilidad" subtitle="Indicador global" value={data ? `${data.kpis.tasaEmpleabilidad}%` : null} icon={TrendingUp} color="#10B981" trend="+3%" />
-      </section>
-
-      {/* Gráficos principales */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading}>
-            <ResponsiveContainer width="100%" height={380}>
+        {/* ── MAIN CHARTS ── */}
+        <section className="dash-section" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
+          <ChartCard title="Evolución mensual" subtitle="Ofertas vs Postulaciones" loading={loading} accent="#6366F1">
+            <ResponsiveContainer width="100%" height={360}>
               <ComposedChart data={(data?.graficas?.ofertasPorMes || []).map(item => ({ ...item, _label: formatMonthLabel(item.mes) }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis dataKey="_label" tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} />
-                <YAxis tick={{ fill: 'var(--color-text-muted)' }} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend />
-                <Bar dataKey="ofertas" fill="#2563EB" name="Ofertas" radius={[6, 6, 0, 0]} barSize={45} />
-                <Bar dataKey="postulaciones" fill="#EF4444" name="Postulaciones" radius={[6, 6, 0, 0]} barSize={45} />
+                <defs>
+                  <linearGradient id="ofertasGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366F1" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#6366F1" stopOpacity={0.6} />
+                  </linearGradient>
+                  <linearGradient id="postGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#F43F5E" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#F43F5E" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID_LINES} vertical={false} />
+                <XAxis dataKey="_label" tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', paddingTop: 16 }}
+                  iconType="circle"
+                />
+                <Bar dataKey="ofertas" fill="url(#ofertasGrad)" name="Ofertas" radius={[8, 8, 0, 0]} barSize={36} />
+                <Bar dataKey="postulaciones" fill="url(#postGrad)" name="Postulaciones" radius={[8, 8, 0, 0]} barSize={36} />
               </ComposedChart>
             </ResponsiveContainer>
           </ChartCard>
-        </div>
 
-        {/* PIE CHART - CENTRADO Y PULIDO */}
-        <ChartCard title="Distribución por carrera" subtitle="Egresados por especialidad" loading={loading}>
-          <ResponsiveContainer width="100%" height={380}>
-            <PieChart>
-              <Pie
-                data={data?.graficas?.egresadosPorCarrera || []}
-                cx="50%"
-                cy="48%"
-                innerRadius={85}
-                outerRadius={125}
-                paddingAngle={6}
-                cornerRadius={10}
-                dataKey="value"
-                nameKey="name"
-              >
-                {(data?.graficas?.egresadosPorCarrera || []).map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-
-              {/* NÚMERO CENTRAL */}
-              <text
-                x="50%"
-                y="44%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-6xl font-bold tracking-tighter fill-[var(--color-text-primary)]"
-              >
-                {data?.kpis?.totalEgresados || 0}
-              </text>
-
-              {/* TEXTO "TOTAL EGRESADOS" DEBAJO */}
-              <text
-                x="50%"
-                y="57%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-sm font-medium fill-[var(--color-text-muted)] tracking-widest"
-              >
-                TOTAL EGRESADOS
-              </text>
-
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [`${value} egresados`, name]} />
-              <Legend
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                iconType="circle"
-                iconSize={11}
-                wrapperStyle={{
-                  fontSize: '13px',
-                  color: 'var(--color-text-secondary)',
-                  paddingTop: '25px',
-                  lineHeight: 1.7
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </section>
-
-      {/* Otros gráficos */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año" loading={loading}>
-          <ResponsiveContainer width="100%" height={340}>
-            <ComposedChart data={data?.graficas?.contratacionesPorCohorte || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis dataKey="anio" tick={{ fill: 'var(--color-text-muted)' }} />
-              <YAxis tick={{ fill: 'var(--color-text-muted)' }} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend />
-              <Bar dataKey="total" fill="#E2E8F0" name="Total egresados" />
-              <Bar dataKey="contratados" fill="#10B981" name="Contratados" />
-              <Line type="natural" dataKey="contratados" stroke="#10B981" strokeWidth={4} dot={{ r: 6 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        <ChartCard title="Top habilidades demandadas" subtitle="Más solicitadas" loading={loading}>
-          <ResponsiveContainer width="100%" height={340}>
-            <BarChart data={data?.graficas?.topHabilidades?.slice(0, 8) || []} layout="vertical" margin={{ left: 30 }}>
-              <CartesianGrid stroke="var(--color-border)" />
-              <XAxis type="number" tick={{ fill: 'var(--color-text-muted)' }} />
-              <YAxis type="category" dataKey="name" tick={{ fill: 'var(--color-text-muted)' }} width={160} />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="value" fill="#2563EB" radius={[0, 12, 12, 0]} barSize={32} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </section>
-
-      {/* Estado de postulaciones */}
-      {data?.graficas?.distribucionEstados && (
-        <section className="rounded-3xl border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2563EB]/10">
-              <CalendarDays className="h-6 w-6 text-[#2563EB]" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">Estado de postulaciones</h3>
-              <p className="text-sm text-[var(--color-text-muted)]">Distribución actual del proceso</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-            {data.graficas.distribucionEstados.map((d: any, i: number) => {
-              const colorMap: Record<string, { bg: string; text: string }> = {
-                POSTULADO: { bg: 'rgba(37,99,235,0.08)', text: '#2563EB' },
-                EN_REVISION: { bg: 'rgba(245,158,11,0.08)', text: '#D97706' },
-                ENTREVISTA: { bg: 'rgba(236,72,153,0.08)', text: '#DB2777' },
-                CONTRATADO: { bg: 'rgba(16,185,129,0.08)', text: '#059669' },
-                RECHAZADO: { bg: 'rgba(239,68,68,0.08)', text: '#DC2626' },
-              };
-              const c = colorMap[d.name] || { bg: 'var(--color-bg-subtle)', text: 'var(--color-text-secondary)' };
-              return (
-                <div key={i} className="rounded-2xl p-6 text-center transition hover:scale-105" style={{ background: c.bg }}>
-                  <p className="text-5xl font-semibold" style={{ color: c.text }}>{d.value}</p>
-                  <p className="mt-3 text-sm font-medium uppercase tracking-widest" style={{ color: c.text }}>
-                    {d.name.replace('_', ' ')}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+          <ChartCard title="Por carrera" subtitle="Egresados por especialidad" loading={loading} accent="#F59E0B">
+            <ResponsiveContainer width="100%" height={360}>
+              <PieChart>
+                <Pie
+                  data={data?.graficas?.egresadosPorCarrera || []}
+                  cx="50%"
+                  cy="46%"
+                  innerRadius={90}
+                  outerRadius={130}
+                  paddingAngle={5}
+                  cornerRadius={8}
+                  dataKey="value"
+                  nameKey="name"
+                >
+                  {(data?.graficas?.egresadosPorCarrera || []).map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="transparent" />
+                  ))}
+                </Pie>
+                <text x="50%" y="42%" textAnchor="middle" dominantBaseline="middle"
+                  style={{ fontSize: 36, fontWeight: 800, fill: '#F8FAFC', fontFamily: 'Syne, sans-serif', letterSpacing: '-2px' }}>
+                  {data?.kpis?.totalEgresados || 0}
+                </text>
+                <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle"
+                  style={{ fontSize: 10, fill: 'rgba(255,255,255,0.35)', fontWeight: 600, letterSpacing: '0.1em' }}>
+                  TOTAL
+                </text>
+                <Tooltip contentStyle={tooltipStyle}
+                  formatter={(value: number, name: string) => [`${value} egresados`, name]} />
+                <Legend
+                  layout="horizontal" verticalAlign="bottom" align="center"
+                  iconType="circle" iconSize={9}
+                  wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', paddingTop: 20, lineHeight: 2 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </section>
-      )}
 
-      {error && <p className="text-red-500 text-center p-6">{error}</p>}
-    </main>
+        {/* ── SECONDARY CHARTS ── */}
+        <section className="dash-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <ChartCard title="Empleabilidad por cohorte" subtitle="Evolución por año" loading={loading} accent="#10B981">
+            <ResponsiveContainer width="100%" height={320}>
+              <ComposedChart data={data?.graficas?.contratacionesPorCohorte || []}>
+                <defs>
+                  <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
+                    <stop offset="100%" stopColor="rgba(255,255,255,0.03)" />
+                  </linearGradient>
+                  <linearGradient id="contratGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10B981" />
+                    <stop offset="100%" stopColor="#10B98188" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID_LINES} vertical={false} />
+                <XAxis dataKey="anio" tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: AXIS_TICK, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', paddingTop: 16 }} iconType="circle" />
+                <Bar dataKey="total" fill="url(#totalGrad)" name="Total egresados" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="contratados" fill="url(#contratGrad)" name="Contratados" radius={[6, 6, 0, 0]} />
+                <Line type="natural" dataKey="contratados" stroke="#10B981" strokeWidth={3}
+                  dot={{ r: 5, fill: '#10B981', strokeWidth: 2, stroke: '#08080F' }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          <ChartCard title="Top habilidades demandadas" subtitle="Las más solicitadas en ofertas" loading={loading} accent="#0EA5E9">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                data={data?.graficas?.topHabilidades?.slice(0, 8) || []}
+                layout="vertical"
+                margin={{ left: 16 }}
+              >
+                <defs>
+                  <linearGradient id="skillGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#0EA5E9" />
+                    <stop offset="100%" stopColor="#6366F1" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={GRID_LINES} horizontal={false} />
+                <XAxis type="number" tick={{ fill: AXIS_TICK, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name"
+                  tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                  width={150} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                <Bar dataKey="value" fill="url(#skillGrad)" radius={[0, 10, 10, 0]} barSize={26} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </section>
+
+        {/* ── ESTADOS ── */}
+        {data?.graficas?.distribucionEstados && (
+          <section className="dash-section" style={{
+            borderRadius: 24,
+            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'linear-gradient(135deg, #13131A 0%, #0D0D12 100%)',
+            padding: '32px 36px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 14,
+                background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <CalendarDays size={20} color="#6366F1" />
+              </div>
+              <div>
+                <h3 style={{
+                  fontSize: 17, fontWeight: 700, color: '#F8FAFC',
+                  letterSpacing: '-0.3px', marginBottom: 2,
+                  fontFamily: "'Syne', sans-serif",
+                }}>Estado de postulaciones</h3>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Distribución actual del proceso de selección</p>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: 14,
+            }}>
+              {data.graficas.distribucionEstados.map((d: any, i: number) => {
+                const stateConfig: Record<string, { accent: string; bg: string; label: string }> = {
+                  POSTULADO:   { accent: '#6366F1', bg: 'rgba(99,102,241,0.08)', label: 'Postulado' },
+                  EN_REVISION: { accent: '#F59E0B', bg: 'rgba(245,158,11,0.08)', label: 'En revisión' },
+                  ENTREVISTA:  { accent: '#EC4899', bg: 'rgba(236,72,153,0.08)', label: 'Entrevista' },
+                  CONTRATADO:  { accent: '#10B981', bg: 'rgba(16,185,129,0.08)', label: 'Contratado' },
+                  RECHAZADO:   { accent: '#F43F5E', bg: 'rgba(244,63,94,0.08)', label: 'Rechazado' },
+                };
+                const cfg = stateConfig[d.name] || { accent: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', label: d.name };
+
+                return (
+                  <div
+                    key={i}
+                    className="status-card"
+                    style={{
+                      borderRadius: 20,
+                      border: `1px solid ${cfg.accent}20`,
+                      background: cfg.bg,
+                      padding: '24px 20px',
+                      textAlign: 'center',
+                      transition: 'transform 0.2s ease',
+                      cursor: 'default',
+                    }}
+                  >
+                    <p style={{
+                      fontSize: 48, fontWeight: 800, lineHeight: 1,
+                      color: cfg.accent, marginBottom: 10,
+                      fontFamily: "'Syne', sans-serif", letterSpacing: '-2px',
+                    }}>{d.value}</p>
+                    <div style={{
+                      display: 'inline-block',
+                      padding: '4px 12px', borderRadius: 999,
+                      background: `${cfg.accent}18`, border: `1px solid ${cfg.accent}30`,
+                    }}>
+                      <p style={{
+                        fontSize: 11, fontWeight: 700,
+                        letterSpacing: '0.08em', textTransform: 'uppercase',
+                        color: cfg.accent,
+                      }}>
+                        {cfg.label}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {error && (
+          <p style={{
+            textAlign: 'center', padding: '24px',
+            color: '#F43F5E', background: 'rgba(244,63,94,0.08)',
+            borderRadius: 16, border: '1px solid rgba(244,63,94,0.2)',
+          }}>{error}</p>
+        )}
+      </main>
+    </>
   );
 }
