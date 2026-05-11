@@ -28,22 +28,24 @@ const ESTADO_LABELS: Record<EstadoPostulacion, string> = {
 
 const ESTADO_STYLES: Record<EstadoPostulacion, string> = {
   POSTULADO:   'bg-amber-50   text-amber-700   ring-amber-200   dark:bg-amber-500/10   dark:text-amber-300   dark:ring-amber-500/20',
-  EN_REVISION:    'bg-blue-50    text-blue-700    ring-blue-200    dark:bg-blue-500/10    dark:text-blue-300    dark:ring-blue-500/20',
+  EN_REVISION: 'bg-blue-50    text-blue-700    ring-blue-200    dark:bg-blue-500/10    dark:text-blue-300    dark:ring-blue-500/20',
   ENTREVISTA:  'bg-indigo-50  text-indigo-700  ring-indigo-200  dark:bg-indigo-500/10  dark:text-indigo-300  dark:ring-indigo-500/20',
-  CONTRATADO:    'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  CONTRATADO:  'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
   RECHAZADO:   'bg-red-50     text-red-700     ring-red-200     dark:bg-red-500/10     dark:text-red-300     dark:ring-red-500/20',
 };
 
 const ESTADO_DOT: Record<EstadoPostulacion, string> = {
-  PENDIENTE:'#F59E0B', REVISADO:'#2563EB', ENTREVISTA:'#6366F1', ACEPTADO:'#10B981', RECHAZADO:'#EF4444',
-};
-
-const SUMMARY_COLOR: Record<string, string> = {
-  blue:'#2563EB', amber:'#F59E0B', indigo:'#6366F1', emerald:'#10B981',
+  POSTULADO:   '#F59E0B',
+  EN_REVISION: '#2563EB',
+  ENTREVISTA:  '#6366F1',
+  CONTRATADO:  '#10B981',
+  RECHAZADO:   '#EF4444',
 };
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
-function isEstadoPostulacion(v: string): v is EstadoPostulacion { return ESTADOS.includes(v as EstadoPostulacion); }
+function isEstadoPostulacion(v: string): v is EstadoPostulacion {
+  return ESTADOS.includes(v as EstadoPostulacion);
+}
 
 function normalizeOfertas(response: unknown): Oferta[] {
   if (Array.isArray(response)) return response as Oferta[];
@@ -60,7 +62,7 @@ function normalizePostulaciones(response: unknown): Postulacion[] {
 }
 
 function getInitials(nombre?: string, apellido?: string) {
-  return ${nombre?.charAt(0) ?? ''}${apellido?.charAt(0) ?? ''}.toUpperCase() || 'EG';
+  return `${nombre?.charAt(0) ?? ''}${apellido?.charAt(0) ?? ''}`.toUpperCase() || 'EG';
 }
 
 function formatDate(value?: string) {
@@ -70,16 +72,16 @@ function formatDate(value?: string) {
 }
 
 function getEstadoIcon(estado: string) {
-  if (estado === 'CONTRATADO')  return <CheckCircle className="h-3 w-3" />;
-  if (estado === 'RECHAZADO') return <XCircle className="h-3 w-3" />;
+  if (estado === 'CONTRATADO') return <CheckCircle className="h-3 w-3" />;
+  if (estado === 'RECHAZADO')  return <XCircle className="h-3 w-3" />;
   return <Clock className="h-3 w-3" />;
 }
 
 /* ─── Sub-components ───────────────────────────────────────────── */
 function EstadoBadge({ estado }: { estado: string }) {
-  const s = isEstadoPostulacion(estado) ? estado : 'PENDIENTE';
+  const s = isEstadoPostulacion(estado) ? estado : 'POSTULADO';
   return (
-    <span className={inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${ESTADO_STYLES[s]}}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${ESTADO_STYLES[s]}`}>
       {getEstadoIcon(s)}{ESTADO_LABELS[s]}
     </span>
   );
@@ -123,14 +125,14 @@ function TableSkeleton() {
 
 /* ─── Page ─────────────────────────────────────────────────────── */
 export default function CandidatosPage() {
-  const [ofertas,           setOfertas]           = useState<Oferta[]>([]);
-  const [selectedOferta,    setSelectedOferta]    = useState('');
-  const [postulaciones,     setPostulaciones]     = useState<Postulacion[]>([]);
-  const [loadingOfertas,    setLoadingOfertas]    = useState(true);
+  const [ofertas,              setOfertas]              = useState<Oferta[]>([]);
+  const [selectedOferta,       setSelectedOferta]       = useState('');
+  const [postulaciones,        setPostulaciones]        = useState<Postulacion[]>([]);
+  const [loadingOfertas,       setLoadingOfertas]       = useState(true);
   const [loadingPostulaciones, setLoadingPostulaciones] = useState(false);
-  const [search,            setSearch]            = useState('');
-  const [estadoFilter,      setEstadoFilter]      = useState('');
-  const [error,             setError]             = useState<string | null>(null);
+  const [search,               setSearch]               = useState('');
+  const [estadoFilter,         setEstadoFilter]         = useState('');
+  const [error,                setError]                = useState<string | null>(null);
 
   const loadPostulaciones = useCallback(async (ofertaId: string) => {
     if (!ofertaId) { setPostulaciones([]); setLoadingPostulaciones(false); return; }
@@ -193,7 +195,9 @@ export default function CandidatosPage() {
     try {
       setError(null);
       await postulacionesApi.cambiarEstado(postulacionId, nuevoEstado);
-      setPostulaciones(prev => prev.map(p => p.id === postulacionId ? { ...p, estado: nuevoEstado } : p));
+      setPostulaciones(prev =>
+        prev.map(p => p.id === postulacionId ? { ...p, estado: nuevoEstado } : p)
+      );
     } catch (err) {
       console.error('Error al cambiar estado:', err);
       setError('No se pudo cambiar el estado de la postulación.');
@@ -224,7 +228,7 @@ export default function CandidatosPage() {
             type="button" onClick={loadOfertas} disabled={isLoading}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-[13px] font-semibold text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)] disabled:opacity-60"
           >
-            <RefreshCw className={h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}} /> Actualizar
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} /> Actualizar
           </button>
         </div>
       </section>
@@ -314,7 +318,7 @@ export default function CandidatosPage() {
           <div>
             <h2 className="text-[15px] font-semibold text-[var(--color-text-primary)]">Lista de candidatos</h2>
             <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">
-              {isLoading ? 'Cargando postulantes...' : ${postulacionesFiltradas.length} candidato(s) encontrado(s)}
+              {isLoading ? 'Cargando postulantes...' : `${postulacionesFiltradas.length} candidato(s) encontrado(s)`}
             </p>
           </div>
 
@@ -324,7 +328,7 @@ export default function CandidatosPage() {
               {ESTADOS.filter(e => postulacionesFiltradas.some(p => p.estado === e)).map(e => {
                 const count = postulacionesFiltradas.filter(p => p.estado === e).length;
                 return (
-                  <span key={e} className={inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ring-1 ${ESTADO_STYLES[e]}}>
+                  <span key={e} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ring-1 ${ESTADO_STYLES[e]}`}>
                     <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: ESTADO_DOT[e] }} />
                     {ESTADO_LABELS[e]} · {count}
                   </span>
@@ -354,7 +358,7 @@ export default function CandidatosPage() {
               ) : postulacionesFiltradas.length > 0 ? (
                 postulacionesFiltradas.map(postulacion => {
                   const e = postulacion.egresado;
-                  const estadoActual = isEstadoPostulacion(postulacion.estado) ? postulacion.estado : 'PENDIENTE';
+                  const estadoActual = isEstadoPostulacion(postulacion.estado) ? postulacion.estado : 'POSTULADO';
                   return (
                     <tr key={postulacion.id} className="group transition-colors hover:bg-[var(--color-bg-subtle)]/60">
 
