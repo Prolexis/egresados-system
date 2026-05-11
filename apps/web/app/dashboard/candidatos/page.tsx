@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -27,6 +28,11 @@ type EstadoPostulacion =
   | 'CONTRATADO'
   | 'RECHAZADO';
 
+type Empresa = {
+  nombreComercial?: string;
+  razonSocial?: string;
+};
+
 type Oferta = {
   id: string;
   titulo: string;
@@ -43,6 +49,7 @@ type Egresado = {
   carrera?: string;
   anioEgreso?: number;
   telefono?: string;
+
   user?: {
     email?: string;
   };
@@ -96,6 +103,13 @@ const ESTADO_DOT: Record<EstadoPostulacion, string> = {
   ENTREVISTA: '#6366F1',
   CONTRATADO: '#10B981',
   RECHAZADO: '#EF4444',
+};
+
+const SUMMARY_COLOR: Record<string, string> = {
+  blue: '#2563EB',
+  amber: '#F59E0B',
+  indigo: '#6366F1',
+  emerald: '#10B981',
 };
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
@@ -181,7 +195,7 @@ function getEstadoIcon(estado: EstadoPostulacion) {
   return <Clock className="h-3 w-3" />;
 }
 
-/* ─── Sub-components ───────────────────────────────────────────── */
+/* ─── Components ───────────────────────────────────────────── */
 function EstadoBadge({ estado }: { estado: string }) {
   const s: EstadoPostulacion = isEstadoPostulacion(estado)
     ? estado
@@ -219,6 +233,47 @@ function SelectWrapper({
   );
 }
 
+function StatCard({
+  title,
+  value,
+  subtitle,
+  color,
+}: {
+  title: string;
+  value: number;
+  subtitle: string;
+  color: string;
+}) {
+  return (
+    <article className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5">
+      <div
+        className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-[.08] blur-2xl"
+        style={{ backgroundColor: color }}
+      />
+
+      <div
+        className="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl opacity-75"
+        style={{ background: color }}
+      />
+
+      <p className="relative mb-1 text-[11px] font-medium text-[var(--color-text-muted)]">
+        {title}
+      </p>
+
+      <p
+        className="relative text-2xl font-bold tracking-tight"
+        style={{ color }}
+      >
+        {value}
+      </p>
+
+      <p className="relative mt-0.5 text-[11px] text-[var(--color-text-muted)]">
+        {subtitle}
+      </p>
+    </article>
+  );
+}
+
 /* ─── Page ─────────────────────────────────────────────────────── */
 export default function CandidatosPage() {
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
@@ -247,7 +302,7 @@ export default function CandidatosPage() {
 
       setPostulaciones(normalizePostulaciones(response));
     } catch (err) {
-      console.error(err);
+      console.error('Error al cargar postulaciones:', err);
 
       setError('No se pudieron cargar los candidatos.');
       setPostulaciones([]);
@@ -263,21 +318,35 @@ export default function CandidatosPage() {
 
       const response = await ofertasApi.misOfertas();
 
-      const lista = normalizeOfertas(response);
+      const listaOfertas = normalizeOfertas(response);
 
-      setOfertas(lista);
+      setOfertas(listaOfertas);
 
-      const inicial = lista[0]?.id ?? '';
+      let ofertaDesdeUrl = '';
 
-      setSelectedOferta(inicial);
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
 
-      if (!inicial) {
+        ofertaDesdeUrl = params.get('oferta') ?? '';
+      }
+
+      const existeOfertaUrl = listaOfertas.some(
+        (o) => o.id === ofertaDesdeUrl
+      );
+
+      const ofertaInicial = existeOfertaUrl
+        ? ofertaDesdeUrl
+        : listaOfertas[0]?.id ?? '';
+
+      setSelectedOferta(ofertaInicial);
+
+      if (!ofertaInicial) {
         setPostulaciones([]);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error al cargar ofertas:', err);
 
-      setError('No se pudieron cargar las ofertas.');
+      setError('No se pudieron cargar tus ofertas laborales.');
     } finally {
       setLoadingOfertas(false);
     }
@@ -293,6 +362,11 @@ export default function CandidatosPage() {
     }
   }, [selectedOferta, loadPostulaciones]);
 
+  const selectedOfertaInfo = useMemo(
+    () => ofertas.find((o) => o.id === selectedOferta),
+    [ofertas, selectedOferta]
+  );
+
   const postulacionesFiltradas = useMemo(() => {
     const term = search.trim().toLowerCase();
 
@@ -304,8 +378,8 @@ export default function CandidatosPage() {
         e?.apellido,
         e?.dni,
         e?.carrera,
-        e?.telefono,
         e?.user?.email,
+        e?.telefono,
         p.estado,
       ]
         .filter(Boolean)
@@ -319,9 +393,28 @@ export default function CandidatosPage() {
     });
   }, [postulaciones, search, estadoFilter]);
 
+  const resumen = useMemo(
+    () => ({
+      total: postulacionesFiltradas.length,
+
+      pendientes: postulacionesFiltradas.filter(
+        (p) => p.estado === 'POSTULADO'
+      ).length,
+
+      entrevistas: postulacionesFiltradas.filter(
+        (p) => p.estado === 'ENTREVISTA'
+      ).length,
+
+      aceptados: postulacionesFiltradas.filter(
+        (p) => p.estado === 'CONTRATADO'
+      ).length,
+    }),
+    [postulacionesFiltradas]
+  );
+
   const handleCambiarEstado = async (
     postulacionId: string,
-    nuevoEstado: EstadoPostulacion
+    nuevoEstado: string
   ) => {
     try {
       setError(null);
@@ -341,194 +434,80 @@ export default function CandidatosPage() {
         )
       );
     } catch (err) {
-      console.error(err);
+      console.error('Error al cambiar estado:', err);
 
       setError('No se pudo cambiar el estado de la postulación.');
     }
   };
 
+  const isLoading = loadingOfertas || loadingPostulaciones;
+
   return (
     <main className="space-y-4">
-      {error && (
-        <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-700">
-          {error}
-        </section>
-      )}
+      {/* HERO */}
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6">
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+              <UserCheck className="h-3 w-3 text-blue-500" />
+              Gestión de postulantes
+            </div>
 
-      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5">
-        <SelectWrapper>
-          <select
-            value={selectedOferta}
-            onChange={(e) => setSelectedOferta(e.target.value)}
-            className="min-h-[42px] w-full appearance-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2.5 pr-10 text-[13px]"
-          >
-            <option value="">Selecciona una oferta</option>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Candidatos
+            </h1>
 
-            {ofertas.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.titulo}
-              </option>
-            ))}
-          </select>
-        </SelectWrapper>
-      </section>
-
-      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px]">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
-
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar..."
-              className="min-h-[42px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-2.5 pl-10 pr-4 text-[13px]"
-            />
+            <p className="mt-1.5 max-w-xl text-sm text-[var(--color-text-secondary)]">
+              Revisa, filtra y gestiona postulantes.
+            </p>
           </div>
 
-          <SelectWrapper icon={<Filter className="h-3.5 w-3.5" />}>
-            <select
-              value={estadoFilter}
-              onChange={(e) => setEstadoFilter(e.target.value)}
-              className="min-h-[42px] w-full appearance-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-2.5 pl-10 pr-10 text-[13px]"
-            >
-              <option value="">Todos los estados</option>
+          <button
+            type="button"
+            onClick={loadOfertas}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-[13px] font-semibold"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${
+                isLoading ? 'animate-spin' : ''
+              }`}
+            />
 
-              {ESTADOS.map((e) => (
-                <option key={e} value={e}>
-                  {ESTADO_LABELS[e]}
-                </option>
-              ))}
-            </select>
-          </SelectWrapper>
+            Actualizar
+          </button>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
-            <thead>
-              <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
-                <th className="px-5 py-3 text-left text-[10px] font-bold uppercase">
-                  Candidato
-                </th>
+      {/* KPIs */}
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <StatCard
+          title="Total candidatos"
+          value={resumen.total}
+          subtitle="Según filtros"
+          color="#2563EB"
+        />
 
-                <th className="px-5 py-3 text-left text-[10px] font-bold uppercase">
-                  Carrera
-                </th>
+        <StatCard
+          title="Pendientes"
+          value={resumen.pendientes}
+          subtitle="Por revisar"
+          color="#F59E0B"
+        />
 
-                <th className="px-5 py-3 text-left text-[10px] font-bold uppercase">
-                  Contacto
-                </th>
+        <StatCard
+          title="Entrevistas"
+          value={resumen.entrevistas}
+          subtitle="En proceso"
+          color="#6366F1"
+        />
 
-                <th className="px-5 py-3 text-center text-[10px] font-bold uppercase">
-                  Fecha
-                </th>
-
-                <th className="px-5 py-3 text-center text-[10px] font-bold uppercase">
-                  Estado
-                </th>
-
-                <th className="px-5 py-3 text-center text-[10px] font-bold uppercase">
-                  Acción
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-[var(--color-border)]">
-              {postulacionesFiltradas.map((postulacion) => {
-                const e = postulacion.egresado;
-
-                const estadoActual: EstadoPostulacion =
-                  isEstadoPostulacion(postulacion.estado)
-                    ? postulacion.estado
-                    : 'POSTULADO';
-
-                return (
-                  <tr
-                    key={postulacion.id}
-                    className="group transition-colors hover:bg-[var(--color-bg-subtle)]/60"
-                  >
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10 text-[12px] font-bold text-blue-700">
-                          {getInitials(e?.nombre, e?.apellido)}
-                        </div>
-
-                        <div>
-                          <p className="text-[13px] font-semibold">
-                            {e?.nombre} {e?.apellido}
-                          </p>
-
-                          <p className="text-[11px] text-[var(--color-text-muted)]">
-                            DNI: {e?.dni ?? '—'}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-5 py-3.5">
-                      <p className="flex items-center gap-1.5 text-[13px]">
-                        <BookOpen className="h-3.5 w-3.5" />
-                        {e?.carrera ?? '—'}
-                      </p>
-
-                      <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">
-                        Cohorte {e?.anioEgreso ?? '—'}
-                      </p>
-                    </td>
-
-                    <td className="px-5 py-3.5">
-                      <p className="flex items-center gap-1.5 text-[12px]">
-                        <Mail className="h-3 w-3" />
-                        {e?.user?.email ?? '—'}
-                      </p>
-
-                      <p className="mt-1 flex items-center gap-1.5 text-[12px]">
-                        <Phone className="h-3 w-3" />
-                        {e?.telefono ?? '—'}
-                      </p>
-                    </td>
-
-                    <td className="px-5 py-3.5 text-center">
-                      <span className="text-[11px] text-[var(--color-text-muted)]">
-                        {formatDate(
-                          postulacion.fechaPostulacion ??
-                            postulacion.createdAt
-                        )}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-3.5 text-center">
-                      <EstadoBadge estado={postulacion.estado} />
-                    </td>
-
-                    <td className="px-5 py-3.5 text-center">
-                      <SelectWrapper>
-                        <select
-                          value={estadoActual}
-                          onChange={(ev) =>
-                            handleCambiarEstado(
-                              postulacion.id,
-                              ev.target.value as EstadoPostulacion
-                            )
-                          }
-                          className="min-w-[148px] appearance-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5 pr-9 text-[12px]"
-                        >
-                          {ESTADOS.map((s) => (
-                            <option key={s} value={s}>
-                              {ESTADO_LABELS[s]}
-                            </option>
-                          ))}
-                        </select>
-                      </SelectWrapper>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <StatCard
+          title="Aceptados"
+          value={resumen.aceptados}
+          subtitle="Proceso exitoso"
+          color="#10B981"
+        />
       </section>
     </main>
   );
