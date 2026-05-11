@@ -3,186 +3,113 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ofertasApi, postulacionesApi } from '@/lib/api';
 import {
-  BookOpen,
-  Briefcase,
-  CheckCircle,
-  ChevronDown,
-  Clock,
-  Filter,
-  GraduationCap,
-  Mail,
-  Phone,
-  RefreshCw,
-  Search,
-  UserCheck,
-  XCircle,
+  BookOpen, Briefcase, CheckCircle, ChevronDown, Clock,
+  Filter, GraduationCap, Mail, Phone, RefreshCw,
+  Search, UserCheck, XCircle,
 } from 'lucide-react';
 
-type EstadoPostulacion =
-  | 'PENDIENTE'
-  | 'REVISADO'
-  | 'ENTREVISTA'
-  | 'ACEPTADO'
-  | 'RECHAZADO';
+/* ─── Types ────────────────────────────────────────────────────── */
+type EstadoPostulacion = 'PENDIENTE' | 'REVISADO' | 'ENTREVISTA' | 'ACEPTADO' | 'RECHAZADO';
+type Empresa    = { nombreComercial?: string; razonSocial?: string };
+type Oferta     = { id: string; titulo: string; _count?: { postulaciones?: number } };
+type Egresado   = { id?: string; nombre?: string; apellido?: string; dni?: string; carrera?: string; anioEgreso?: number; telefono?: string; user?: { email?: string } };
+type Postulacion = { id: string; estado: EstadoPostulacion | string; egresado?: Egresado; createdAt?: string; fechaPostulacion?: string };
 
-type Oferta = {
-  id: string;
-  titulo: string;
-  _count?: {
-    postulaciones?: number;
-  };
-};
-
-type Egresado = {
-  id?: string;
-  nombre?: string;
-  apellido?: string;
-  dni?: string;
-  carrera?: string;
-  anioEgreso?: number;
-  telefono?: string;
-  user?: {
-    email?: string;
-  };
-};
-
-type Postulacion = {
-  id: string;
-  estado: EstadoPostulacion | string;
-  egresado?: Egresado;
-  createdAt?: string;
-  fechaPostulacion?: string;
-};
-
-const ESTADOS: EstadoPostulacion[] = [
-  'PENDIENTE',
-  'REVISADO',
-  'ENTREVISTA',
-  'ACEPTADO',
-  'RECHAZADO',
-];
+/* ─── Constants ────────────────────────────────────────────────── */
+const ESTADOS: EstadoPostulacion[] = ['PENDIENTE','REVISADO','ENTREVISTA','ACEPTADO','RECHAZADO'];
 
 const ESTADO_LABELS: Record<EstadoPostulacion, string> = {
-  PENDIENTE: 'Pendiente',
-  REVISADO: 'Revisado',
-  ENTREVISTA: 'Entrevista',
-  ACEPTADO: 'Aceptado',
-  RECHAZADO: 'Rechazado',
+  PENDIENTE:'Pendiente', REVISADO:'Revisado', ENTREVISTA:'Entrevista', ACEPTADO:'Aceptado', RECHAZADO:'Rechazado',
 };
 
 const ESTADO_STYLES: Record<EstadoPostulacion, string> = {
-  PENDIENTE:
-    'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20',
-  REVISADO:
-    'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20',
-  ENTREVISTA:
-    'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20',
-  ACEPTADO:
-    'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
-  RECHAZADO:
-    'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20',
+  PENDIENTE:   'bg-amber-50   text-amber-700   ring-amber-200   dark:bg-amber-500/10   dark:text-amber-300   dark:ring-amber-500/20',
+  REVISADO:    'bg-blue-50    text-blue-700    ring-blue-200    dark:bg-blue-500/10    dark:text-blue-300    dark:ring-blue-500/20',
+  ENTREVISTA:  'bg-indigo-50  text-indigo-700  ring-indigo-200  dark:bg-indigo-500/10  dark:text-indigo-300  dark:ring-indigo-500/20',
+  ACEPTADO:    'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  RECHAZADO:   'bg-red-50     text-red-700     ring-red-200     dark:bg-red-500/10     dark:text-red-300     dark:ring-red-500/20',
 };
 
-function isEstadoPostulacion(value: string): value is EstadoPostulacion {
-  return ESTADOS.includes(value as EstadoPostulacion);
-}
+const ESTADO_DOT: Record<EstadoPostulacion, string> = {
+  PENDIENTE:'#F59E0B', REVISADO:'#2563EB', ENTREVISTA:'#6366F1', ACEPTADO:'#10B981', RECHAZADO:'#EF4444',
+};
+
+const SUMMARY_COLOR: Record<string, string> = {
+  blue:'#2563EB', amber:'#F59E0B', indigo:'#6366F1', emerald:'#10B981',
+};
+
+/* ─── Helpers ──────────────────────────────────────────────────── */
+function isEstadoPostulacion(v: string): v is EstadoPostulacion { return ESTADOS.includes(v as EstadoPostulacion); }
 
 function normalizeOfertas(response: unknown): Oferta[] {
   if (Array.isArray(response)) return response as Oferta[];
-
-  if (
-    response &&
-    typeof response === 'object' &&
-    'ofertas' in response &&
-    Array.isArray((response as { ofertas?: unknown }).ofertas)
-  ) {
-    return (response as { ofertas: Oferta[] }).ofertas;
-  }
-
-  if (
-    response &&
-    typeof response === 'object' &&
-    'data' in response &&
-    Array.isArray((response as { data?: unknown }).data)
-  ) {
-    return (response as { data: Oferta[] }).data;
-  }
-
+  if (response && typeof response === 'object' && 'ofertas' in response && Array.isArray((response as any).ofertas)) return (response as any).ofertas;
+  if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) return (response as any).data;
   return [];
 }
 
 function normalizePostulaciones(response: unknown): Postulacion[] {
   if (Array.isArray(response)) return response as Postulacion[];
-
-  if (
-    response &&
-    typeof response === 'object' &&
-    'postulaciones' in response &&
-    Array.isArray((response as { postulaciones?: unknown }).postulaciones)
-  ) {
-    return (response as { postulaciones: Postulacion[] }).postulaciones;
-  }
-
-  if (
-    response &&
-    typeof response === 'object' &&
-    'data' in response &&
-    Array.isArray((response as { data?: unknown }).data)
-  ) {
-    return (response as { data: Postulacion[] }).data;
-  }
-
+  if (response && typeof response === 'object' && 'postulaciones' in response && Array.isArray((response as any).postulaciones)) return (response as any).postulaciones;
+  if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) return (response as any).data;
   return [];
 }
 
 function getInitials(nombre?: string, apellido?: string) {
-  const first = nombre?.charAt(0) ?? '';
-  const second = apellido?.charAt(0) ?? '';
-
-  return `${first}${second}`.toUpperCase() || 'EG';
+  return `${nombre?.charAt(0) ?? ''}${apellido?.charAt(0) ?? ''}`.toUpperCase() || 'EG';
 }
 
 function formatDate(value?: string) {
   if (!value) return '—';
-
-  try {
-    return new Date(value).toLocaleDateString('es-PE', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return '—';
-  }
+  try { return new Date(value).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  catch { return '—'; }
 }
 
 function getEstadoIcon(estado: string) {
-  if (estado === 'ACEPTADO') return <CheckCircle className="h-3.5 w-3.5" />;
-  if (estado === 'RECHAZADO') return <XCircle className="h-3.5 w-3.5" />;
-
-  return <Clock className="h-3.5 w-3.5" />;
+  if (estado === 'ACEPTADO')  return <CheckCircle className="h-3 w-3" />;
+  if (estado === 'RECHAZADO') return <XCircle className="h-3 w-3" />;
+  return <Clock className="h-3 w-3" />;
 }
 
+/* ─── Sub-components ───────────────────────────────────────────── */
 function EstadoBadge({ estado }: { estado: string }) {
-  const safeEstado = isEstadoPostulacion(estado) ? estado : 'PENDIENTE';
-
+  const s = isEstadoPostulacion(estado) ? estado : 'PENDIENTE';
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${ESTADO_STYLES[safeEstado]}`}
-    >
-      {getEstadoIcon(safeEstado)}
-      {ESTADO_LABELS[safeEstado]}
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${ESTADO_STYLES[s]}`}>
+      {getEstadoIcon(s)}{ESTADO_LABELS[s]}
     </span>
+  );
+}
+
+function SelectWrapper({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) {
+  return (
+    <div className="relative">
+      {icon && <div className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-[var(--color-text-muted)]">{icon}</div>}
+      {children}
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+    </div>
+  );
+}
+
+function StatCard({ title, value, subtitle, color }: { title: string; value: number; subtitle: string; color: string }) {
+  return (
+    <article className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-[.08] blur-2xl transition group-hover:scale-125" style={{ backgroundColor: color }} />
+      <div className="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl opacity-75" style={{ background: color }} />
+      <p className="relative text-[11px] font-medium text-[var(--color-text-muted)] mb-1">{title}</p>
+      <p className="relative text-2xl font-bold tracking-tight" style={{ color }}>{value}</p>
+      <p className="relative mt-0.5 text-[11px] text-[var(--color-text-muted)]">{subtitle}</p>
+    </article>
   );
 }
 
 function TableSkeleton() {
   return (
     <>
-      {Array.from({ length: 6 }).map((_, index) => (
-        <tr key={index}>
-          <td colSpan={6} className="px-5 py-4">
-            <div className="h-5 w-full animate-pulse rounded-lg bg-slate-100 dark:bg-white/10" />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <tr key={i}>
+          <td colSpan={6} className="px-5 py-3">
+            <div className="h-14 w-full animate-pulse rounded-xl bg-[var(--color-bg-subtle)]" />
           </td>
         </tr>
       ))}
@@ -190,218 +117,79 @@ function TableSkeleton() {
   );
 }
 
-function SummaryCard({
-  title,
-  value,
-  subtitle,
-  tone = 'blue',
-}: {
-  title: string;
-  value: number;
-  subtitle: string;
-  tone?: 'blue' | 'amber' | 'indigo' | 'emerald';
-}) {
-  const toneMap = {
-    blue: 'border-blue-100 bg-white shadow-blue-100/40 dark:border-white/10 dark:bg-white/5',
-    amber:
-      'border-amber-100 bg-gradient-to-br from-white to-amber-50/70 shadow-amber-100/40 dark:border-white/10 dark:from-white/5 dark:to-amber-500/5',
-    indigo:
-      'border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70 shadow-indigo-100/40 dark:border-white/10 dark:from-white/5 dark:to-indigo-500/5',
-    emerald:
-      'border-emerald-100 bg-gradient-to-br from-white to-emerald-50/70 shadow-emerald-100/40 dark:border-white/10 dark:from-white/5 dark:to-emerald-500/5',
-  };
-
-  const valueColor = {
-    blue: 'text-slate-950 dark:text-white',
-    amber: 'text-amber-600 dark:text-amber-300',
-    indigo: 'text-indigo-600 dark:text-indigo-300',
-    emerald: 'text-emerald-600 dark:text-emerald-300',
-  };
-
-  return (
-    <article
-      className={`rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${toneMap[tone]}`}
-    >
-      <p className="text-sm font-semibold text-slate-500 dark:text-white/60">
-        {title}
-      </p>
-      <h3 className={`mt-1.5 text-2xl font-black ${valueColor[tone]}`}>
-        {value}
-      </h3>
-      <p className="mt-1 text-xs text-slate-400 dark:text-white/45">
-        {subtitle}
-      </p>
-    </article>
-  );
-}
-
-function SelectWrapper({
-  children,
-  icon,
-}: {
-  children: React.ReactNode;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <div className="relative">
-      {icon && (
-        <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 dark:text-white/45">
-          {icon}
-        </div>
-      )}
-      {children}
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/45" />
-    </div>
-  );
-}
-
+/* ─── Page ─────────────────────────────────────────────────────── */
 export default function CandidatosPage() {
-  const [ofertas, setOfertas] = useState<Oferta[]>([]);
-  const [selectedOferta, setSelectedOferta] = useState('');
-  const [postulaciones, setPostulaciones] = useState<Postulacion[]>([]);
-
-  const [loadingOfertas, setLoadingOfertas] = useState(true);
+  const [ofertas,           setOfertas]           = useState<Oferta[]>([]);
+  const [selectedOferta,    setSelectedOferta]    = useState('');
+  const [postulaciones,     setPostulaciones]     = useState<Postulacion[]>([]);
+  const [loadingOfertas,    setLoadingOfertas]    = useState(true);
   const [loadingPostulaciones, setLoadingPostulaciones] = useState(false);
-
-  const [search, setSearch] = useState('');
-  const [estadoFilter, setEstadoFilter] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [search,            setSearch]            = useState('');
+  const [estadoFilter,      setEstadoFilter]      = useState('');
+  const [error,             setError]             = useState<string | null>(null);
 
   const loadPostulaciones = useCallback(async (ofertaId: string) => {
-    if (!ofertaId) {
-      setPostulaciones([]);
-      setLoadingPostulaciones(false);
-      return;
-    }
-
+    if (!ofertaId) { setPostulaciones([]); setLoadingPostulaciones(false); return; }
     try {
-      setLoadingPostulaciones(true);
-      setError(null);
-
+      setLoadingPostulaciones(true); setError(null);
       const response = await postulacionesApi.porOferta(ofertaId);
       setPostulaciones(normalizePostulaciones(response));
     } catch (err) {
       console.error('Error al cargar postulaciones:', err);
       setError('No se pudieron cargar los candidatos de esta oferta.');
       setPostulaciones([]);
-    } finally {
-      setLoadingPostulaciones(false);
-    }
+    } finally { setLoadingPostulaciones(false); }
   }, []);
 
   const loadOfertas = useCallback(async () => {
     try {
-      setLoadingOfertas(true);
-      setError(null);
-
-      const response = await ofertasApi.misOfertas();
-      const listaOfertas = normalizeOfertas(response);
-
+      setLoadingOfertas(true); setError(null);
+      const response       = await ofertasApi.misOfertas();
+      const listaOfertas   = normalizeOfertas(response);
       setOfertas(listaOfertas);
-
-      let ofertaDesdeUrl = '';
-
+      let ofertaDesdeUrl   = '';
       if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search);
         ofertaDesdeUrl = params.get('oferta') ?? '';
       }
-
-      const existeOfertaUrl = listaOfertas.some(
-        (oferta) => oferta.id === ofertaDesdeUrl,
-      );
-
-      const ofertaInicial = existeOfertaUrl
-        ? ofertaDesdeUrl
-        : listaOfertas[0]?.id ?? '';
-
+      const existeOfertaUrl = listaOfertas.some(o => o.id === ofertaDesdeUrl);
+      const ofertaInicial   = existeOfertaUrl ? ofertaDesdeUrl : listaOfertas[0]?.id ?? '';
       setSelectedOferta(ofertaInicial);
-
-      if (!ofertaInicial) {
-        setPostulaciones([]);
-      }
+      if (!ofertaInicial) setPostulaciones([]);
     } catch (err) {
       console.error('Error al cargar ofertas:', err);
       setError('No se pudieron cargar tus ofertas laborales.');
-      setOfertas([]);
-      setPostulaciones([]);
-    } finally {
-      setLoadingOfertas(false);
-    }
+      setOfertas([]); setPostulaciones([]);
+    } finally { setLoadingOfertas(false); }
   }, []);
 
-  useEffect(() => {
-    loadOfertas();
-  }, [loadOfertas]);
+  useEffect(() => { loadOfertas(); }, [loadOfertas]);
+  useEffect(() => { if (selectedOferta) loadPostulaciones(selectedOferta); }, [selectedOferta, loadPostulaciones]);
 
-  useEffect(() => {
-    if (selectedOferta) {
-      loadPostulaciones(selectedOferta);
-    }
-  }, [selectedOferta, loadPostulaciones]);
-
-  const selectedOfertaInfo = useMemo(() => {
-    return ofertas.find((oferta) => oferta.id === selectedOferta);
-  }, [ofertas, selectedOferta]);
+  const selectedOfertaInfo = useMemo(() => ofertas.find(o => o.id === selectedOferta), [ofertas, selectedOferta]);
 
   const postulacionesFiltradas = useMemo(() => {
     const term = search.trim().toLowerCase();
-
-    return postulaciones.filter((postulacion) => {
-      const egresado = postulacion.egresado;
-
-      const searchableText = [
-        egresado?.nombre,
-        egresado?.apellido,
-        egresado?.dni,
-        egresado?.carrera,
-        egresado?.user?.email,
-        egresado?.telefono,
-        postulacion.estado,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-
-      const matchSearch = term ? searchableText.includes(term) : true;
-      const matchEstado = estadoFilter
-        ? postulacion.estado === estadoFilter
-        : true;
-
-      return matchSearch && matchEstado;
+    return postulaciones.filter(p => {
+      const e = p.egresado;
+      const texto = [e?.nombre, e?.apellido, e?.dni, e?.carrera, e?.user?.email, e?.telefono, p.estado]
+        .filter(Boolean).join(' ').toLowerCase();
+      return (term ? texto.includes(term) : true) && (estadoFilter ? p.estado === estadoFilter : true);
     });
   }, [postulaciones, search, estadoFilter]);
 
-  const resumen = useMemo(() => {
-    return {
-      total: postulacionesFiltradas.length,
-      pendientes: postulacionesFiltradas.filter(
-        (postulacion) => postulacion.estado === 'PENDIENTE',
-      ).length,
-      entrevistas: postulacionesFiltradas.filter(
-        (postulacion) => postulacion.estado === 'ENTREVISTA',
-      ).length,
-      aceptados: postulacionesFiltradas.filter(
-        (postulacion) => postulacion.estado === 'ACEPTADO',
-      ).length,
-    };
-  }, [postulacionesFiltradas]);
+  const resumen = useMemo(() => ({
+    total      : postulacionesFiltradas.length,
+    pendientes : postulacionesFiltradas.filter(p => p.estado === 'PENDIENTE').length,
+    entrevistas: postulacionesFiltradas.filter(p => p.estado === 'ENTREVISTA').length,
+    aceptados  : postulacionesFiltradas.filter(p => p.estado === 'ACEPTADO').length,
+  }), [postulacionesFiltradas]);
 
-  const handleCambiarEstado = async (
-    postulacionId: string,
-    nuevoEstado: string,
-  ) => {
+  const handleCambiarEstado = async (postulacionId: string, nuevoEstado: string) => {
     try {
       setError(null);
-
       await postulacionesApi.cambiarEstado(postulacionId, nuevoEstado);
-
-      setPostulaciones((prev) =>
-        prev.map((postulacion) =>
-          postulacion.id === postulacionId
-            ? { ...postulacion, estado: nuevoEstado }
-            : postulacion,
-        ),
-      );
+      setPostulaciones(prev => prev.map(p => p.id === postulacionId ? { ...p, estado: nuevoEstado } : p));
     } catch (err) {
       console.error('Error al cambiar estado:', err);
       setError('No se pudo cambiar el estado de la postulación.');
@@ -411,271 +199,216 @@ export default function CandidatosPage() {
   const isLoading = loadingOfertas || loadingPostulaciones;
 
   return (
-    <main className="space-y-5 animate-fadeIn">
-      <section className="relative overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 px-6 py-5 shadow-md shadow-blue-100/50 dark:border-slate-700 dark:from-[#0B1220] dark:via-[#111827] dark:to-[#020617] dark:shadow-none">
-        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-blue-300/25 blur-3xl dark:bg-blue-500/15" />
-        <div className="absolute bottom-0 left-1/3 h-36 w-36 rounded-full bg-indigo-300/20 blur-3xl dark:bg-indigo-500/15" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.85),transparent_35%)] dark:bg-none" />
+    <main className="space-y-4">
 
+      {/* ── Hero ─────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-blue-500/5 blur-3xl dark:bg-blue-500/10" />
+        <div className="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-2xl bg-blue-500/50" />
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-white/75">
-              <UserCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-300" />
+            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+              <UserCheck className="h-3 w-3 text-blue-500" />
               Gestión de postulantes
             </div>
-
-            <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-4xl dark:text-white">
-              Candidatos
-            </h1>
-
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-white/70">
-              Revisa, filtra y gestiona los postulantes asociados a tus ofertas
-              laborales.
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Candidatos</h1>
+            <p className="mt-1.5 max-w-xl text-sm text-[var(--color-text-secondary)]">
+              Revisa, filtra y gestiona los postulantes asociados a tus ofertas laborales.
             </p>
           </div>
-
           <button
-            type="button"
-            onClick={loadOfertas}
-            disabled={isLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-5 py-2.5 text-sm font-black text-slate-950 shadow-md shadow-blue-100 transition hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-white dark:shadow-none dark:hover:bg-white/15"
+            type="button" onClick={loadOfertas} disabled={isLoading}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2 text-[13px] font-semibold text-[var(--color-text-secondary)] transition hover:text-[var(--color-text-primary)] disabled:opacity-60"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualizar
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} /> Actualizar
           </button>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          title="Total candidatos"
-          value={resumen.total}
-          subtitle="Según filtros aplicados"
-          tone="blue"
-        />
-        <SummaryCard
-          title="Pendientes"
-          value={resumen.pendientes}
-          subtitle="Por revisar"
-          tone="amber"
-        />
-        <SummaryCard
-          title="Entrevistas"
-          value={resumen.entrevistas}
-          subtitle="En proceso activo"
-          tone="indigo"
-        />
-        <SummaryCard
-          title="Aceptados"
-          value={resumen.aceptados}
-          subtitle="Proceso exitoso"
-          tone="emerald"
-        />
+      {/* ── KPIs ─────────────────────────────────────────────────── */}
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <StatCard title="Total candidatos" value={resumen.total}       subtitle="Según filtros aplicados" color="#2563EB" />
+        <StatCard title="Pendientes"       value={resumen.pendientes}  subtitle="Por revisar"             color="#F59E0B" />
+        <StatCard title="Entrevistas"      value={resumen.entrevistas} subtitle="En proceso activo"       color="#6366F1" />
+        <StatCard title="Aceptados"        value={resumen.aceptados}   subtitle="Proceso exitoso"         color="#10B981" />
       </section>
 
-      <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-blue-100/40 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-        <div className="mb-3 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
+      {/* ── Selector de oferta ────────────────────────────────────── */}
+      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5">
+        <div className="mb-3 flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
             <Briefcase className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-sm font-black text-slate-950 dark:text-white">
-              Selección de oferta laboral
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-white/50">
-              Elige la oferta para ver sus postulantes
-            </p>
+            <h2 className="text-[13px] font-semibold text-[var(--color-text-primary)]">Selección de oferta</h2>
+            <p className="text-[11px] text-[var(--color-text-muted)]">Elige la oferta para ver sus postulantes</p>
           </div>
         </div>
 
         <SelectWrapper>
           <select
             value={selectedOferta}
-            onChange={(event) => setSelectedOferta(event.target.value)}
+            onChange={e => setSelectedOferta(e.target.value)}
             disabled={loadingOfertas}
-            className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:bg-slate-900 dark:focus:ring-blue-500/20"
+            className="min-h-[42px] w-full appearance-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-2.5 pr-10 text-[13px] font-medium text-[var(--color-text-primary)] outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <option value="">
-              {loadingOfertas ? 'Cargando ofertas...' : 'Selecciona una oferta'}
-            </option>
-
-            {ofertas.map((oferta) => (
-              <option key={oferta.id} value={oferta.id}>
-                {oferta.titulo} ({oferta._count?.postulaciones ?? 0} postulantes)
-              </option>
+            <option value="">{loadingOfertas ? 'Cargando ofertas...' : 'Selecciona una oferta'}</option>
+            {ofertas.map(o => (
+              <option key={o.id} value={o.id}>{o.titulo} ({o._count?.postulaciones ?? 0} postulantes)</option>
             ))}
           </select>
         </SelectWrapper>
 
         {selectedOfertaInfo && (
-          <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
-            Oferta seleccionada: <span className="font-black">{selectedOfertaInfo.titulo}</span>
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-blue-500/15 bg-blue-500/[.06] px-3 py-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+            <p className="text-[12px] text-blue-700 dark:text-blue-300">
+              Oferta seleccionada: <span className="font-semibold">{selectedOfertaInfo.titulo}</span>
+            </p>
           </div>
         )}
       </section>
 
-      <section className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm shadow-blue-100/40 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_240px]">
+      {/* ── Filtros ───────────────────────────────────────────────── */}
+      <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/45" />
-
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-muted)]" />
             <input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por nombre, DNI, correo o carrera..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:placeholder:text-white/40 dark:focus:border-blue-400 dark:focus:bg-slate-900 dark:focus:ring-blue-500/20"
+              className="min-h-[42px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-2.5 pl-10 pr-4 text-[13px] text-[var(--color-text-primary)] outline-none transition placeholder:text-[var(--color-text-muted)] focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
 
-          <SelectWrapper icon={<Filter className="h-4 w-4" />}>
+          <SelectWrapper icon={<Filter className="h-3.5 w-3.5" />}>
             <select
               value={estadoFilter}
-              onChange={(event) => setEstadoFilter(event.target.value)}
-              className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-11 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:bg-slate-900 dark:focus:ring-blue-500/20"
+              onChange={e => setEstadoFilter(e.target.value)}
+              className="min-h-[42px] w-full appearance-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] py-2.5 pl-10 pr-10 text-[13px] font-medium text-[var(--color-text-primary)] outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
             >
               <option value="">Todos los estados</option>
-              {ESTADOS.map((estado) => (
-                <option key={estado} value={estado}>
-                  {ESTADO_LABELS[estado]}
-                </option>
-              ))}
+              {ESTADOS.map(e => <option key={e} value={e}>{ESTADO_LABELS[e]}</option>)}
             </select>
           </SelectWrapper>
         </div>
       </section>
 
+      {/* ── Error ─────────────────────────────────────────────────── */}
       {error && (
-        <section className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+        <section className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </section>
       )}
 
-      <section className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/40 dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-        <div className="border-b border-slate-100 px-5 py-4 dark:border-white/10">
-          <h2 className="text-base font-black text-slate-950 dark:text-white">
-            Lista de candidatos
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-white/55">
-            {isLoading
-              ? 'Cargando postulantes...'
-              : `${postulacionesFiltradas.length} candidato(s) encontrado(s)`}
-          </p>
+      {/* ── Tabla ─────────────────────────────────────────────────── */}
+      <section className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)]">
+
+        {/* Header */}
+        <div className="flex flex-col gap-2 border-b border-[var(--color-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-[15px] font-semibold text-[var(--color-text-primary)]">Lista de candidatos</h2>
+            <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">
+              {isLoading ? 'Cargando postulantes...' : `${postulacionesFiltradas.length} candidato(s) encontrado(s)`}
+            </p>
+          </div>
+
+          {/* Estado distribution pills */}
+          {!isLoading && postulacionesFiltradas.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {ESTADOS.filter(e => postulacionesFiltradas.some(p => p.estado === e)).map(e => {
+                const count = postulacionesFiltradas.filter(p => p.estado === e).length;
+                return (
+                  <span key={e} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ring-1 ${ESTADO_STYLES[e]}`}>
+                    <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: ESTADO_DOT[e] }} />
+                    {ESTADO_LABELS[e]} · {count}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
 
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px]">
-            <thead className="bg-slate-50 dark:bg-white/5">
-              <tr>
-                <th className="px-5 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
-                  Candidato
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
-                  Carrera
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
-                  Contacto
-                </th>
-                <th className="px-5 py-3 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
-                  Fecha
-                </th>
-                <th className="px-5 py-3 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
-                  Estado
-                </th>
-                <th className="px-5 py-3 text-center text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-white/45">
-                  Acciones
-                </th>
+            <thead>
+              <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                {['Candidato','Carrera','Contacto','Fecha','Estado','Acción'].map((h, i) => (
+                  <th key={h} className={`px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] ${
+                    i <= 2 ? 'text-left' : 'text-center'}`}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100 dark:divide-white/10">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {isLoading ? (
                 <TableSkeleton />
               ) : postulacionesFiltradas.length > 0 ? (
-                postulacionesFiltradas.map((postulacion) => {
-                  const egresado = postulacion.egresado;
-
+                postulacionesFiltradas.map(postulacion => {
+                  const e = postulacion.egresado;
+                  const estadoActual = isEstadoPostulacion(postulacion.estado) ? postulacion.estado : 'PENDIENTE';
                   return (
-                    <tr
-                      key={postulacion.id}
-                      className="transition-colors hover:bg-blue-50/40 dark:hover:bg-white/5"
-                    >
-                      <td className="px-5 py-4">
+                    <tr key={postulacion.id} className="group transition-colors hover:bg-[var(--color-bg-subtle)]/60">
+
+                      {/* Candidato */}
+                      <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-sm font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20">
-                            {getInitials(egresado?.nombre, egresado?.apellido)}
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-[12px] font-bold text-blue-700 ring-1 ring-blue-500/15 dark:text-blue-300">
+                            {getInitials(e?.nombre, e?.apellido)}
                           </div>
-
                           <div>
-                            <p className="text-sm font-black text-slate-950 dark:text-white">
-                              {egresado?.nombre ?? 'Sin nombre'}{' '}
-                              {egresado?.apellido ?? ''}
+                            <p className="text-[13px] font-semibold text-[var(--color-text-primary)]">
+                              {e?.nombre ?? 'Sin nombre'} {e?.apellido ?? ''}
                             </p>
-                            <p className="text-xs font-medium text-slate-400 dark:text-white/45">
-                              DNI: {egresado?.dni ?? '—'}
-                            </p>
+                            <p className="text-[11px] text-[var(--color-text-muted)]">DNI: {e?.dni ?? '—'}</p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-5 py-4">
-                        <p className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-white/75">
-                          <BookOpen className="h-4 w-4 text-slate-400 dark:text-white/45" />
-                          {egresado?.carrera ?? '—'}
+                      {/* Carrera */}
+                      <td className="px-5 py-3.5">
+                        <p className="flex items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)]">
+                          <BookOpen className="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]" />
+                          {e?.carrera ?? '—'}
                         </p>
+                        <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">Cohorte {e?.anioEgreso ?? '—'}</p>
+                      </td>
 
-                        <p className="mt-1 text-xs font-medium text-slate-400 dark:text-white/45">
-                          Cohorte {egresado?.anioEgreso ?? '—'}
+                      {/* Contacto */}
+                      <td className="px-5 py-3.5">
+                        <p className="flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)]">
+                          <Mail className="h-3 w-3 shrink-0" />{e?.user?.email ?? '—'}
+                        </p>
+                        <p className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)]">
+                          <Phone className="h-3 w-3 shrink-0" />{e?.telefono ?? '—'}
                         </p>
                       </td>
 
-                      <td className="px-5 py-4">
-                        <div className="space-y-1">
-                          <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-white/55">
-                            <Mail className="h-3.5 w-3.5" />
-                            {egresado?.user?.email ?? '—'}
-                          </p>
-
-                          <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-white/55">
-                            <Phone className="h-3.5 w-3.5" />
-                            {egresado?.telefono ?? '—'}
-                          </p>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-4 text-center">
-                        <span className="text-xs font-bold text-slate-500 dark:text-white/55">
-                          {formatDate(
-                            postulacion.fechaPostulacion ??
-                              postulacion.createdAt,
-                          )}
+                      {/* Fecha */}
+                      <td className="px-5 py-3.5 text-center">
+                        <span className="text-[11px] text-[var(--color-text-muted)]">
+                          {formatDate(postulacion.fechaPostulacion ?? postulacion.createdAt)}
                         </span>
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      {/* Estado */}
+                      <td className="px-5 py-3.5 text-center">
                         <EstadoBadge estado={postulacion.estado} />
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      {/* Acción – cambiar estado */}
+                      <td className="px-5 py-3.5 text-center">
                         <SelectWrapper>
                           <select
-                            value={
-                              isEstadoPostulacion(postulacion.estado)
-                                ? postulacion.estado
-                                : 'PENDIENTE'
-                            }
-                            onChange={(event) =>
-                              handleCambiarEstado(
-                                postulacion.id,
-                                event.target.value,
-                              )
-                            }
-                            className="min-w-[160px] appearance-none rounded-2xl border border-slate-200 bg-white px-3 py-2 pr-10 text-xs font-bold text-slate-700 outline-none transition hover:bg-slate-50 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-100 dark:hover:bg-slate-900 dark:focus:border-blue-400 dark:focus:ring-blue-500/20"
+                            value={estadoActual}
+                            onChange={ev => handleCambiarEstado(postulacion.id, ev.target.value)}
+                            className="min-w-[148px] appearance-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-1.5 pr-9 text-[12px] font-medium text-[var(--color-text-primary)] outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10"
                           >
-                            {ESTADOS.map((estado) => (
-                              <option key={estado} value={estado}>
-                                {ESTADO_LABELS[estado]}
-                              </option>
-                            ))}
+                            {ESTADOS.map(s => <option key={s} value={s}>{ESTADO_LABELS[s]}</option>)}
                           </select>
                         </SelectWrapper>
                       </td>
@@ -684,18 +417,12 @@ export default function CandidatosPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 dark:bg-white/10">
-                      <GraduationCap className="h-7 w-7 text-slate-300 dark:text-white/35" />
+                  <td colSpan={6} className="px-5 py-14 text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+                      <GraduationCap className="h-6 w-6 text-[var(--color-text-muted)]" />
                     </div>
-
-                    <h3 className="mt-4 text-base font-black text-slate-800 dark:text-white">
-                      No hay candidatos para mostrar
-                    </h3>
-
-                    <p className="mt-1 text-sm text-slate-400 dark:text-white/45">
-                      Selecciona otra oferta o limpia los filtros de búsqueda.
-                    </p>
+                    <h3 className="mt-3 text-[15px] font-semibold text-[var(--color-text-primary)]">No hay candidatos para mostrar</h3>
+                    <p className="mt-1.5 text-[13px] text-[var(--color-text-muted)]">Selecciona otra oferta o limpia los filtros de búsqueda.</p>
                   </td>
                 </tr>
               )}
